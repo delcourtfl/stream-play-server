@@ -1,0 +1,188 @@
+2023/08/14 11:28:21 192.168.68.108
+2023/08/14 11:28:21 3000
+2023/08/14 11:28:48 Client request: GET /
+2023/08/14 11:28:48 Client request: GET /styles.css
+2023/08/14 11:28:48 Client request: GET /connect.js
+2023/08/14 11:28:48 Client request: GET /inputs.js
+2023/08/14 11:28:48 Client request: GET /wconfig.json
+2023/08/14 11:28:49 Client request: GET /favicon.ico
+2023/08/14 11:29:21 Admin request: GET /admin/
+2023/08/14 11:29:21 Admin request: GET /admin/styles.css
+2023/08/14 11:29:21 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:29:21 ../logs/video.log
+2023/08/14 11:29:21 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:29:21 ../logs/audio.log
+2023/08/14 11:29:21 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:29:21 ../logs/client.log
+2023/08/14 11:29:21 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:29:21 ../logs/server.log
+2023/08/14 11:29:21 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:29:21 ../logs/sign.log
+2023/08/14 11:29:32 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:29:32 ../logs/video.log
+2023/08/14 11:29:32 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:29:32 ../logs/audio.log
+2023/08/14 11:29:32 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:29:32 ../logs/client.log
+2023/08/14 11:29:32 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:29:32 ../logs/server.log
+2023/08/14 11:29:32 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:29:32 ../logs/sign.log
+2023/08/14 11:29:42 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:29:42 ../logs/video.log
+2023/08/14 11:29:42 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:29:42 ../logs/audio.log
+2023/08/14 11:29:42 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:29:42 ../logs/client.log
+2023/08/14 11:29:42 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:29:42 ../logs/server.log
+2023/08/14 11:29:42 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:29:42 ../logs/sign.log
+2023/08/14 11:29:50 Admin request: GET /admin/
+2023/08/14 11:29:50 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:29:50 ../logs/video.log
+2023/08/14 11:29:50 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:29:50 ../logs/audio.log
+2023/08/14 11:29:50 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:29:50 ../logs/client.log
+2023/08/14 11:29:50 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:29:50 ../logs/server.log
+2023/08/14 11:29:50 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:29:50 ../logs/sign.log
+2023/08/14 11:29:52 Admin request: GET /admin/
+2023/08/14 11:29:52 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:29:52 ../logs/video.log
+2023/08/14 11:29:52 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:29:52 ../logs/audio.log
+2023/08/14 11:29:52 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:29:52 ../logs/client.log
+2023/08/14 11:29:52 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:29:52 ../logs/server.log
+2023/08/14 11:29:52 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:29:52 ../logs/sign.log
+2023/08/14 11:29:55 Client request: GET /
+2023/08/14 11:29:56 Client request: GET /wconfig.json
+2023/08/14 11:30:03 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:03 ../logs/video.log
+2023/08/14 11:30:03 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:03 ../logs/audio.log
+2023/08/14 11:30:03 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:03 ../logs/client.log
+2023/08/14 11:30:03 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:03 ../logs/sign.log
+2023/08/14 11:30:03 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:03 ../logs/server.log
+2023/08/14 11:30:10 Admin request: GET /admin/
+2023/08/14 11:30:10 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:10 ../logs/video.log
+2023/08/14 11:30:10 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:10 ../logs/audio.log
+2023/08/14 11:30:10 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:10 ../logs/server.log
+2023/08/14 11:30:10 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:10 ../logs/sign.log
+2023/08/14 11:30:10 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:10 ../logs/client.log
+2023/08/14 11:30:20 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:20 ../logs/video.log
+2023/08/14 11:30:20 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:20 ../logs/client.log
+2023/08/14 11:30:20 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:20 ../logs/audio.log
+2023/08/14 11:30:20 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:20 ../logs/server.log
+2023/08/14 11:30:20 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:20 ../logs/sign.log
+2023/08/14 11:30:30 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:30 ../logs/video.log
+2023/08/14 11:30:30 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:30 ../logs/audio.log
+2023/08/14 11:30:30 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:30 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:30 ../logs/server.log
+2023/08/14 11:30:30 ../logs/client.log
+2023/08/14 11:30:30 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:30 ../logs/sign.log
+2023/08/14 11:30:40 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:40 ../logs/video.log
+2023/08/14 11:30:40 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:40 ../logs/audio.log
+2023/08/14 11:30:40 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:40 ../logs/client.log
+2023/08/14 11:30:40 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:40 ../logs/sign.log
+2023/08/14 11:30:40 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:40 ../logs/server.log
+2023/08/14 11:30:50 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:30:50 ../logs/video.log
+2023/08/14 11:30:50 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:30:50 ../logs/audio.log
+2023/08/14 11:30:50 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:30:50 ../logs/server.log
+2023/08/14 11:30:50 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:30:50 ../logs/sign.log
+2023/08/14 11:30:50 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:30:50 ../logs/client.log
+2023/08/14 11:31:00 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:00 ../logs/video.log
+2023/08/14 11:31:00 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:00 ../logs/client.log
+2023/08/14 11:31:00 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:00 ../logs/server.log
+2023/08/14 11:31:00 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:00 ../logs/audio.log
+2023/08/14 11:31:00 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:00 ../logs/sign.log
+2023/08/14 11:31:07 Admin request: GET /admin/
+2023/08/14 11:31:07 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:07 ../logs/sign.log
+2023/08/14 11:31:07 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:07 ../logs/server.log
+2023/08/14 11:31:07 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:07 ../logs/audio.log
+2023/08/14 11:31:07 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:07 ../logs/client.log
+2023/08/14 11:31:07 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:07 ../logs/video.log
+2023/08/14 11:31:11 Client request: GET /
+2023/08/14 11:31:11 Client request: GET /wconfig.json
+2023/08/14 11:31:18 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:18 ../logs/video.log
+2023/08/14 11:31:18 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:18 ../logs/audio.log
+2023/08/14 11:31:18 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:18 ../logs/client.log
+2023/08/14 11:31:18 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:18 ../logs/server.log
+2023/08/14 11:31:18 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:18 ../logs/sign.log
+2023/08/14 11:31:28 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:28 ../logs/video.log
+2023/08/14 11:31:28 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:28 ../logs/audio.log
+2023/08/14 11:31:28 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:28 ../logs/client.log
+2023/08/14 11:31:28 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:28 ../logs/server.log
+2023/08/14 11:31:28 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:28 ../logs/sign.log
+2023/08/14 11:31:38 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:38 ../logs/video.log
+2023/08/14 11:31:38 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:38 ../logs/client.log
+2023/08/14 11:31:38 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:38 ../logs/audio.log
+2023/08/14 11:31:38 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:38 ../logs/server.log
+2023/08/14 11:31:38 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:38 ../logs/sign.log
+2023/08/14 11:31:48 Admin log request: GET /admin/logs/video (Log type: video)
+2023/08/14 11:31:48 ../logs/video.log
+2023/08/14 11:31:48 Admin log request: GET /admin/logs/audio (Log type: audio)
+2023/08/14 11:31:48 ../logs/audio.log
+2023/08/14 11:31:48 Admin log request: GET /admin/logs/client (Log type: client)
+2023/08/14 11:31:48 ../logs/client.log
+2023/08/14 11:31:48 Admin log request: GET /admin/logs/sign (Log type: sign)
+2023/08/14 11:31:48 ../logs/sign.log
+2023/08/14 11:31:48 Admin log request: GET /admin/logs/server (Log type: server)
+2023/08/14 11:31:48 ../logs/server.log

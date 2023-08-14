@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SPS : Admin Page</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>Stream Play Server : Admin Logs</h1>
+    <table>
+        <tr>
+            <th>Video Capture</th>
+            <th>Audio Capture</th>
+        </tr>
+        <tr>
+            <td>
+                <pre class="log-container" id="videoLogContainer"></pre>
+            </td>
+            <td>
+                <pre class="log-container" id="audioLogContainer"></pre>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <th>Client</th>
+            <th>Server</th>
+        </tr>
+        <tr>
+            <td>
+                <pre class="log-container" id="clientLogContainer"></pre>
+            </td>
+            <td>
+                <pre class="log-container" id="serverLogContainer"></pre>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <th>Signalling</th>
+        </tr>
+        <tr>
+            <td>
+                <pre class="log-container" id="signLogContainer"></pre>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        const videoLogContainer = document.getElementById('videoLogContainer');
+        const audioLogContainer = document.getElementById('audioLogContainer');
+        const clientLogContainer = document.getElementById('clientLogContainer');
+        const serverLogContainer = document.getElementById('serverLogContainer');
+        const signLogContainer = document.getElementById('signLogContainer');
+
+        // Function to fetch log data from the server for each type of log
+        function fetchLogData(container, logType) {
+            fetch(`/admin/logs/${logType}`)
+                .then(response => response.text())
+                .then(data => {
+                    // Update the log container with the log data
+                    container.textContent = data;
+                })
+                .catch(error => {
+                    console.error(`Error fetching ${logType} log data:`, error);
+                    container.textContent = `Error fetching ${logType} log data.`;
+                });
+        }
+
+        // Fetch log data for each type when the page loads
+        fetchLogData(videoLogContainer, 'video');
+        fetchLogData(audioLogContainer, 'audio');
+        fetchLogData(clientLogContainer, 'client');
+        fetchLogData(serverLogContainer, 'server');
+        fetchLogData(signLogContainer, 'sign');
+
+        // Fetch log data for each type every 10 seconds (adjust the interval as needed)
+        setInterval(() => {
+            fetchLogData(videoLogContainer, 'video');
+            fetchLogData(audioLogContainer, 'audio');
+            fetchLogData(clientLogContainer, 'client');
+            fetchLogData(serverLogContainer, 'server');
+            fetchLogData(signLogContainer, 'sign');
+        }, 10000);
+    </script>
+</body>
+</html>

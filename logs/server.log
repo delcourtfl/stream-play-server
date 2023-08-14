@@ -1,0 +1,30 @@
+2023/08/14 11:30:59 192.168.68.108
+2023/08/14 11:30:59 3000
+2023/08/14 11:30:59 Simple Minesweeper
+Trying to capture video stream
+Got a window to capture
+#Simple Minesweeper#
+C:\ProgramData\chocolatey\bin\ffmpeg.exe -stats_period 10 -f gdigrab -thread_queue_size 1024 -framerate 30 -i title=Simple Minesweeper -vf scale=-1:720 -c:v libx264 -preset ultrafast -tune zerolatency -crf 25 -pix_fmt yuv420p -an -f rtp rtp://127.0.0.1:5004?pkt_size=1200
+C:\ProgramData\chocolatey\bin\ffmpeg.exe -stats_period 10 -f dshow -i audio=Mixage stéréo (Realtek(R) Audio) -c:a libopus -application lowdelay -vbr off -compression_level 0 -frame_duration 20 -vn -f rtp rtp://127.0.0.1:5005
+2023/08/14 11:30:59 Capturing...
+2023/08/14 11:31:13 TRYING OFFER
+2023/08/14 11:31:13 &{PeerConnection-1692005473652315500 {{0 0} 0 0 {{} 0} {{} 0}} { 0 0   } 0xc000330120 {[] 0 1 2  [{0xc000374030 0xc00034e580 certificate-1692005473656547900}] 0 0} <nil> <nil> <nil> <nil> 1 {1} {1} <nil> 0xc00030076c 0xc000300790 0   -1 [] <nil> {<nil>} {<nil>} <nil> <nil> {<nil>} 0xc00032a1b0 0xc000346160 0xc000358900 0xc000340280 0xc000305f80 0xc00035a2c0 0xed5400}
+2023/08/14 11:31:13 Connection State has changed
+2023/08/14 11:31:13 checking
+2023/08/14 11:31:13 Peer Connection State has changed:
+2023/08/14 11:31:13 connecting
+2023/08/14 11:31:13 Adding candidate
+2023/08/14 11:31:13 Adding candidate
+2023/08/14 11:31:13 Adding candidate
+2023/08/14 11:31:13 Sending answer
+2023/08/14 11:31:13 Trying candidate
+2023/08/14 11:31:13 {candidate:1275557671 1 udp 2113937151 87d14328-ee90-4aab-99cd-a8c0d41f8799.local 60017 typ host generation 0 ufrag Zz4o network-cost 999 0xc0001bdce0 0xc0004a5518 0xc0001bdcf0}
+2023/08/14 11:31:13 Trying candidate
+2023/08/14 11:31:13 {candidate:1275557671 1 udp 2113937151 87d14328-ee90-4aab-99cd-a8c0d41f8799.local 60019 typ host generation 0 ufrag Zz4o network-cost 999 0xc0001bdd20 0xc0004a5550 0xc0001bdd30}
+2023/08/14 11:31:13 Connection State has changed
+2023/08/14 11:31:13 connected
+2023/08/14 11:31:13 Good, connection was established !
+2023/08/14 11:31:13 Peer Connection State has changed:
+2023/08/14 11:31:13 connected
+2023/08/14 11:31:13 Good to go !
+Data channel initialized
