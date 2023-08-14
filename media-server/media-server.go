@@ -388,25 +388,9 @@ func peerConnectionSetup (conn *websocket.Conn, peerConnection *webrtc.PeerConne
 						fmt.Println("Error parsing ControllerData:", err)
 						return
 					}
-					fmt.Println("Controller data :")
-					fmt.Printf("%016b\n", data.WButtons)
-					fmt.Printf("%016b\n", uint8(data.BLeftTrigger * 255 / 100))
-					fmt.Printf("%016b\n", uint8(data.BRightTrigger * 255 / 100))
-					fmt.Printf("%016b\n", int16(data.SThumbLX * 32767 / 100))
-					fmt.Printf("%016b\n", int16(data.SThumbLY * 32767 / 100))
-					fmt.Printf("%016b\n", int16(data.SThumbRX * 32767 / 100))
-					fmt.Printf("%016b\n", int16(data.SThumbRY * 32767 / 100))
 
 					report := Xbox360ControllerReport{}
-					report.native = xusb_report{
-						WButtons: data.WButtons, // X button
-						BLeftTrigger:  uint8(data.BLeftTrigger * 255 / 100),
-						BRightTrigger: uint8(data.BRightTrigger * 255 / 100),
-						SThumbLX: int16(data.SThumbLX * 32767 / 100),
-						SThumbLY: int16(data.SThumbLY * 32767 / 100),
-						SThumbRX: int16(data.SThumbRX * 32767 / 100),
-						SThumbRY: int16(data.SThumbRY * 32767 / 100),
-					}
+					report.native = data
 					
 					if (event.Option > len(x360Array) - 1){
 						fmt.Println("Wrong index for gamepad")

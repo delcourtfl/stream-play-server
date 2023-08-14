@@ -149,8 +149,8 @@ function initGamepadInput() {
                         if (button.pressed) {
                             if (!curr[0]) {
                                 setBit(curr[1], nextBitArray);
-                            } else if (stickValues[i][curr[1]] !== 100) {
-                                stickValues[i][curr[1]] = 100;
+                            } else if (stickValues[i][curr[1]] !== 1) {
+                                stickValues[i][curr[1]] = 1;
                                 moved[i] = true;
                             }
                         } else {
@@ -165,10 +165,10 @@ function initGamepadInput() {
                 // Handle gamepad axis input
                 for (let k = 0; k < gamepad.axes.length; k++) {
                     if (k in currentMappingAxes[i]){
-                        const axis = ((gamepad.axes[k] * 100) | 0);
+                        const axis = gamepad.axes[k];
                         const curr = currentMappingAxes[i][k];
                         // Check if the axe is moved
-                        if (!curr[0] && axis > 50) {
+                        if (!curr[0] && Math.abs(axis) > 0.2) {
                             setBit(curr[1], nextBitArray);
                         } else if (axis !== stickValues[i][curr[1]]) {
                             stickValues[i][curr[1]] = axis;
@@ -183,19 +183,17 @@ function initGamepadInput() {
                 }
 
                 if (moved[i]) {
-                    console.log("SENDING");
-                    console.log(bitArray[i].toString(2));
-                    console.log(stickValues);
+                    console.log("Input:", bitArray[i].toString(2), stickValues);
                     send({
                         type: "GAMEPAD",
                         data: JSON.stringify({
                             wButtons: bitArray[i],
-                            bLeftTrigger: stickValues[i][3],
-                            bRightTrigger: stickValues[i][4],
-                            sThumbLX: stickValues[i][0],
-                            sThumbLY: stickValues[i][1],
-                            sThumbRX: stickValues[i][2],
-                            sThumbRY: stickValues[i][5],
+                            bLeftTrigger: stickValues[i][3] * 255 | 0,
+                            bRightTrigger: stickValues[i][4] * 255 | 0,
+                            sThumbLX: stickValues[i][0] * 32767 | 0,
+                            sThumbLY: stickValues[i][1] * -32767 | 0,
+                            sThumbRX: stickValues[i][2] * 32767 | 0,
+                            sThumbRY: stickValues[i][5] * -32767 | 0,
                         }),
                         option: i,
                     });
