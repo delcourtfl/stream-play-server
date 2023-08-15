@@ -2,7 +2,7 @@
 
 ![SPS Logo](res/SPSLogo.png)
 
-Stream Play Server (SPS) is a WebRTC-powered media server for real-time video streaming and remote control of window applications enabling remote gaming experience in a simple web browser environment.
+Stream Play Server (SPS) is a WebRTC-powered media server for real-time video streaming and remote control of Windows applications enabling Remote Gaming in a simple web browser environment.
 
 ## Demo
 
@@ -63,12 +63,12 @@ go run .
 
 ## Usage
 
-Set the ip address and port used in the config.json file before running :
+Set the ip address and port used in the config.json file before running (if no window name is provided the app list every visible windows and ask for the user input) :
 ```json
 {
     "ip_address": "192.168.68.108",
     "port": "3000",
-    "window_name": "" // 
+    "window_name": ""
 }
 ```
 
