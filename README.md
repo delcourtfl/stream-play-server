@@ -33,7 +33,7 @@ User-facing part of the WebRTC application that runs in the web browser (User In
 
 | Main page         | Admin page         |
 | --------------- | --------------- |
-| ![Main](res/ClientSPSmain.gif) | ![Admin](res/ClientSPSadmin.PNG) |
+| ![Main](res/ClientSPSmain.PNG) | ![Admin](res/ClientSPSadmin.PNG) |
 | http://ip\_address | http://ip\_address/admin/ |
 | There are 3 tabs available for the media stream, controller setup and connection setup | The 5 log files are checked every 10 seconds to display the subprocesses states |
 
