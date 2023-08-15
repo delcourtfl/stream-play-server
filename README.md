@@ -123,7 +123,7 @@ Once the application is running some commands are available :
 - *exit* : close everything
 - *stop* : stop the 3 subprocesses (signaling, client, server)
 - *sign* : restart signaling server
-- *client* : restart client
+- *client* : restart client webserver
 - *server* : restart media server
 - *change* : change the window to stream and restart media server
 
