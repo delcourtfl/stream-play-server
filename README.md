@@ -163,6 +163,7 @@ Current issues :
 - Gamepad API will need secure context in the future
 - Mouse and keyboards inputs are commented out for now (it works but the Windows API SendInput is not made for such application and can't run in background so it needs to put the gaming application in front each time)
 - FFmpeg can be quite fickle and might need configuration changes in some cases (e.g. issue with window size not divisible by 2 or window title with special characters)
+- Windows 10 app running with hardware acceleration don't work with FFmpeg (black screen)
 
 ## License
 
