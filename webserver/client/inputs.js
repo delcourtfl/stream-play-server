@@ -3,14 +3,84 @@ document.getElementById("init").addEventListener("click", resumeGamepadInput);
 document.getElementById("pause").addEventListener("click", pauseGamepadInput);
 document.getElementById("addGamepad").addEventListener("click", addGamepad);
 
-// Check if the browser supports the Gamepad API
-if ("getGamepads" in navigator) {
-    // Start listening for gamepad events
-    window.addEventListener("gamepadconnected", onGamepadConnected);
-    window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
-} else {
-    console.log("Gamepad API is not supported");
+// array of gamepad elements
+var gamepadSvgArr = [];
+// buttons elements of the gamepads
+var gamepadBtns = [];
+var gamepadAnlgs = [];
+var SvgLoadedCnt = 0;
+
+async function loadSvgObjects() {
+    const svgPromises = [];
+    for (let i = 0; i < 4; i++) {
+        const obj = document.getElementById("svg-object"+i);
+        obj.setAttribute('style', 'filter: contrast(30%);');
+
+        const svgPromise = new Promise((resolve) => {
+            obj.addEventListener("load", function() {
+                const outerSVGDocument = obj.contentDocument;
+                console.log(outerSVGDocument);
+    
+                var btnArr = [];
+                for (let j = 0; j < 16; j++) { 
+                    var buttonElement = outerSVGDocument.getElementById("controller-b"+j);
+                    btnArr[j] = buttonElement;
+                }
+                gamepadBtns[i] = btnArr;
+
+                var anlgsArr = [];
+
+                const Lstick = outerSVGDocument.getElementById("controller-b6");
+                anlgsArr[0] = Lstick;
+                anlgsArr[1] = Lstick;
+
+                const Rstick = outerSVGDocument.getElementById("controller-b7");
+                anlgsArr[2] = Rstick;
+                anlgsArr[5] = Rstick;
+
+                const Rtrigger = outerSVGDocument.getElementById("controller-a3");
+                anlgsArr[3] = Rtrigger;
+
+                const Ltrigger = outerSVGDocument.getElementById("controller-a5");
+                anlgsArr[4] = Ltrigger;
+
+                gamepadAnlgs[i] = anlgsArr;
+    
+                SvgLoadedCnt++;
+                resolve(); // Resolve the promise when this SVG object is loaded
+            });
+    
+            // Now that the load event listener is attached, set the data attribute to trigger loading
+            obj.setAttribute('data', 'gamepad.svg');
+        });
+    
+        svgPromises.push(svgPromise);
+
+        // Access the contentDocument of the outer <object> (this is the outer SVG document)   
+        gamepadSvgArr[i] = obj;
+    }
+
+    await Promise.all(svgPromises);
 }
+
+loadSvgObjects().then(() => {
+    console.log("All SVG objects are loaded and processed.");
+    console.log(gamepadBtns);
+    
+    // Check if the browser supports the Gamepad API
+    if ("getGamepads" in navigator) {
+        // Start listening for gamepad events
+        window.addEventListener("gamepadconnected", onGamepadConnected);
+        window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
+    } else {
+        console.log("Gamepad API is not supported");
+    }
+
+    resumeGamepadInput();
+});
+
+// Flag to control the loop
+let isPaused = true;
 
 // Event handler when a gamepad is connected
 function onGamepadConnected(event) {
@@ -18,6 +88,8 @@ function onGamepadConnected(event) {
     const gamepadIndex = gamepad.index;
     const gamepadName = gamepad.id.toString();
     console.log("Gamepad connected:" + gamepad.id + " : " + gamepad.index);
+
+    gamepadSvgArr[gamepad.index].setAttribute('style', '');
 
     if (currentMappingButtons[gamepadIndex].length > 0) {
         return;
@@ -107,6 +179,7 @@ function onGamepadConnected(event) {
 function onGamepadDisconnected(event) {
     const gamepad = event.gamepad;
     console.log("Gamepad disconnected:" + gamepad.id + " : " + gamepad.index);
+    gamepadSvgArr[gamepad.index].setAttribute('style', 'filter: contrast(30%);');
 }
 
 function initGamepadInput() {
@@ -149,14 +222,16 @@ function initGamepadInput() {
                         if (button.pressed) {
                             if (!curr[0]) {
                                 setBit(curr[1], nextBitArray);
-                            } else if (stickValues[i][curr[1]] !== 1) {
-                                stickValues[i][curr[1]] = 1;
+                            } else if (stickValues[i][curr[1]] !== button.value) {
+                                stickValues[i][curr[1]] = button.value;
                                 moved[i] = true;
+                                displayAnalogInput(i, curr[1], button.value);
                             }
                         } else {
-                            if (curr[0] && stickValues[i][curr[1]] !== 0){
-                                stickValues[i][curr[1]] = 0;
+                            if (curr[0] && stickValues[i][curr[1]] !== button.value){
+                                stickValues[i][curr[1]] = button.value;
                                 moved[i] = true;
+                                displayAnalogInput(i, curr[1], button.value);
                             }
                         }
                     }
@@ -173,6 +248,7 @@ function initGamepadInput() {
                         } else if (axis !== stickValues[i][curr[1]]) {
                             stickValues[i][curr[1]] = axis;
                             moved[i] = true;
+                            displayAnalogInput(i, curr[1], axis);
                         }
                     }
                 }
@@ -180,23 +256,40 @@ function initGamepadInput() {
                 if (nextBitArray !== bitArray[i]) {
                     moved[i] = true;
                     bitArray[i] = nextBitArray;
+
+                    console.log("BUTTONS MOVE");
+
+                    for (let j = 0; j < 16; j++) { 
+                        var buttonElement = gamepadBtns[i][j];
+                        if (buttonElement) {
+                            if (bitArray[i] & (1 << j)) {
+                                buttonElement.setAttribute('style', 'fill: blue;');
+                            } else {
+                                buttonElement.setAttribute('style', '');
+                            }
+                        }
+                    }
                 }
 
                 if (moved[i]) {
                     console.log("Input:", bitArray[i].toString(2), stickValues);
-                    send({
-                        type: "GAMEPAD",
-                        data: JSON.stringify({
-                            wButtons: bitArray[i],
-                            bLeftTrigger: stickValues[i][3] * 255 | 0,
-                            bRightTrigger: stickValues[i][4] * 255 | 0,
-                            sThumbLX: stickValues[i][0] * 32767 | 0,
-                            sThumbLY: stickValues[i][1] * -32767 | 0,
-                            sThumbRX: stickValues[i][2] * 32767 | 0,
-                            sThumbRY: stickValues[i][5] * -32767 | 0,
-                        }),
-                        option: i,
-                    });
+                    if (streamSocket.readyState === WebSocket.OPEN) {
+                        send({
+                            type: "GAMEPAD",
+                            data: JSON.stringify({
+                                wButtons: bitArray[i],
+                                bLeftTrigger: stickValues[i][3] * 255 | 0,
+                                bRightTrigger: stickValues[i][4] * 255 | 0,
+                                sThumbLX: stickValues[i][0] * 32767 | 0,
+                                sThumbLY: stickValues[i][1] * -32767 | 0,
+                                sThumbRX: stickValues[i][2] * 32767 | 0,
+                                sThumbRY: stickValues[i][5] * -32767 | 0,
+                            }),
+                            option: i,
+                        });
+                    } else {
+                        console.log("WebSocket is not open. Data not sent.");
+                    }
                 }
             }
         }
@@ -209,8 +302,47 @@ function initGamepadInput() {
     requestAnimationFrame(updateGamepadInput);
 }
 
-// Flag to control the loop
-let isPaused = true;
+function displayAnalogInput(gamepadIndex, index, value) {
+
+    console.log("ANALOG MOVE");
+
+    const multiplier = 25;
+
+    switch (index) {
+        case 0:
+            const Lx = Number(gamepadAnlgs[gamepadIndex][0].dataset.originalXPosition);
+            gamepadAnlgs[gamepadIndex][0].setAttribute("cx", Lx + value * multiplier);
+            break;
+        case 1:
+            const Ly = Number(gamepadAnlgs[gamepadIndex][1].dataset.originalYPosition);
+            gamepadAnlgs[gamepadIndex][1].setAttribute("cy", Ly + value * multiplier);
+            break;
+        case 2:
+            const Rx = Number(gamepadAnlgs[gamepadIndex][2].dataset.originalXPosition);
+            gamepadAnlgs[gamepadIndex][2].setAttribute("cx", Rx + value * multiplier);
+            break;
+        case 3:
+            if (value > 0.2) {
+                gamepadAnlgs[gamepadIndex][3].setAttribute('style', 'fill: blue;');
+            } else {
+                gamepadAnlgs[gamepadIndex][3].setAttribute('style', '');
+            }
+            break;
+        case 4:
+            if (value > 0.2) {
+                gamepadAnlgs[gamepadIndex][4].setAttribute('style', 'fill: blue;');
+            } else {
+                gamepadAnlgs[gamepadIndex][4].setAttribute('style', '');
+            }
+            break;
+        case 5:
+            const Ry = Number(gamepadAnlgs[gamepadIndex][5].dataset.originalYPosition);
+            gamepadAnlgs[gamepadIndex][5].setAttribute("cy", Ry + value * multiplier);
+            break;
+        default:
+            console.log("Shoud not happen, bad index for analog buttons");
+    }
+}
 
 // Function to pause the gamepad input
 function pauseGamepadInput() {

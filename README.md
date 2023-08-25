@@ -174,3 +174,4 @@ Current issues :
 - The Pion Webrtc implementation and examples (https://github.com/pion/webrtc).
 - The excellent cloud-morph application (https://github.com/giongto35/cloud-morph), which was a great starting point for this (smaller) project.
 - The stadiacontroller Xbox emulator for ViGEm usage in golang (https://github.com/71/stadiacontroller).
+- The tutorial for the visual gamepad interface (https://github.com/CodingWith-Adam/gamepad-tester-simple-just-controller).
