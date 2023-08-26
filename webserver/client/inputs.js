@@ -198,7 +198,6 @@ function initGamepadInput() {
 
     // Function to update gamepad input
     function updateGamepadInput() {
-        // console.log("READING");
         if (isPaused) {
             // Exit the function if it's paused
             return;
@@ -222,16 +221,19 @@ function initGamepadInput() {
                         if (button.pressed) {
                             if (!curr[0]) {
                                 setBit(curr[1], nextBitArray);
-                            } else if (stickValues[i][curr[1]] !== button.value) {
-                                stickValues[i][curr[1]] = button.value;
-                                moved[i] = true;
-                                displayAnalogInput(i, curr[1], button.value);
+                            } else {
+                                const axisValue = floorToNearest0_1(button.value);
+                                if (stickValues[i][curr[1]] !== axisValue) {
+                                    stickValues[i][curr[1]] = axisValue;
+                                    moved[i] = true;
+                                    displayAnalogInput(i, curr[1], axisValue);
+                                }
                             }
                         } else {
-                            if (curr[0] && stickValues[i][curr[1]] !== button.value){
-                                stickValues[i][curr[1]] = button.value;
+                            if (curr[0] && stickValues[i][curr[1]] !== 0){
+                                stickValues[i][curr[1]] = 0;
                                 moved[i] = true;
-                                displayAnalogInput(i, curr[1], button.value);
+                                displayAnalogInput(i, curr[1], 0);
                             }
                         }
                     }
@@ -240,7 +242,7 @@ function initGamepadInput() {
                 // Handle gamepad axis input
                 for (let k = 0; k < gamepad.axes.length; k++) {
                     if (k in currentMappingAxes[i]){
-                        const axis = gamepad.axes[k];
+                        const axis = floorToNearest0_1(gamepad.axes[k]);
                         const curr = currentMappingAxes[i][k];
                         // Check if the axe is moved
                         if (!curr[0] && Math.abs(axis) > 0.2) {
@@ -256,8 +258,6 @@ function initGamepadInput() {
                 if (nextBitArray !== bitArray[i]) {
                     moved[i] = true;
                     bitArray[i] = nextBitArray;
-
-                    console.log("BUTTONS MOVE");
 
                     for (let j = 0; j < 16; j++) { 
                         var buttonElement = gamepadBtns[i][j];
@@ -303,11 +303,7 @@ function initGamepadInput() {
 }
 
 function displayAnalogInput(gamepadIndex, index, value) {
-
-    console.log("ANALOG MOVE");
-
     const multiplier = 25;
-
     switch (index) {
         case 0:
             const Lx = Number(gamepadAnlgs[gamepadIndex][0].dataset.originalXPosition);
@@ -342,6 +338,10 @@ function displayAnalogInput(gamepadIndex, index, value) {
         default:
             console.log("Shoud not happen, bad index for analog buttons");
     }
+}
+
+function floorToNearest0_1(value) {
+    return Math.floor(value * 10) / 10;
 }
 
 // Function to pause the gamepad input
