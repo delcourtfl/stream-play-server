@@ -1,3 +1,4 @@
+/
 # Stream Play Server (SPS)
 
 ![SPS Logo](res/SPSLogo.png)
