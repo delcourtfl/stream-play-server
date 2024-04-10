@@ -1,17 +1,32 @@
 package main
 
 import (
+	// "context"
 	"encoding/json"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
-	"net"
+	// "net"
 	"time"
 	"fmt"
 
+	"io"
+
 	"github.com/gorilla/websocket"
 	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v3/pkg/media"
+	"github.com/pion/webrtc/v3/pkg/media/h264reader"
+
+	// "github.com/pion/mediadevices"
+	// "github.com/pion/mediadevices/pkg/frame"
+	// "github.com/pion/mediadevices/pkg/prop"
+
+	// "github.com/pion/mediadevices/pkg/codec/openh264"
+)
+
+const (
+	h264FrameDuration = time.Millisecond * 333 //33
 )
 
 type KeyEvent struct {
@@ -65,7 +80,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	// Start capturing the specified application window
-	captureStream(title)
+	// captureStream(title)
 	// Use a defer statement to ensure the command process is killed when the main function exits
 	defer stopAllCapture()
 	log.Println("Capturing...")
@@ -79,41 +94,9 @@ func main() {
 	defer conn.Close()
 
 	// Create a map to store peer connections andd tracks for each client
-	var clientsVideoTracks []*webrtc.TrackLocalStaticRTP
-	var clientsAudioTracks []*webrtc.TrackLocalStaticRTP
+	var clientsVideoTracks []*webrtc.TrackLocalStaticSample
+	var clientsAudioTracks []*webrtc.TrackLocalStaticSample
 	var clientsConn []*webrtc.PeerConnection
-
-	bufferSize := 300000 // 300KB
-
-	// Open a UDP Listener for RTP Packets on port 5004
-	listenerVideo, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
-	if err != nil {
-		panic(err)
-	}
-	err = listenerVideo.SetReadBuffer(bufferSize)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err = listenerVideo.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	// Open a UDP Listener for RTP Packets on port 5005
-	listenerAudio, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5005})
-	if err != nil {
-		panic(err)
-	}
-	err = listenerAudio.SetReadBuffer(bufferSize)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err = listenerAudio.Close(); err != nil {
-			panic(err)
-		}
-	}()
 
 	done := make(chan struct{})
 	message := &WSMessage{}
@@ -221,46 +204,6 @@ func main() {
 			}
 		}
 	}()
-
-	// Goroutine to handle capturing and sending video frames
-	go func() {
-		// Read RTP packets forever and send them to the WebRTC Client
-		inboundRTPPacket := make([]byte, 1600) // UDP MTU
-		for {
-			n, _, err := listenerVideo.ReadFrom(inboundRTPPacket)
-			if err != nil {
-				panic(err)
-			}
-
-			// Send RTP packets to all connected clients
-			for _, track := range clientsVideoTracks {
-				_, err = track.Write(inboundRTPPacket[:n])
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-	}();
-
-	// Goroutine to handle capturing and sending audio frames
-	go func() {
-		// Read RTP packets forever and send them to the WebRTC Client
-		inboundRTPPacket := make([]byte, 1600) // UDP MTU
-		for {
-			n, _, err := listenerAudio.ReadFrom(inboundRTPPacket)
-			if err != nil {
-				panic(err)
-			}
-
-			// Send RTP packets to all connected clients
-			for _, track := range clientsAudioTracks {
-				_, err = track.Write(inboundRTPPacket[:n])
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-	}();
 	
 	// Send messages to the server
 	for {
@@ -284,49 +227,100 @@ func main() {
  * @return videoTrack - Video track for the client
  * @return error - Error, if any
  */
-func peerConnectionSetup (conn *websocket.Conn, peerConnection *webrtc.PeerConnection) (*webrtc.TrackLocalStaticRTP, *webrtc.TrackLocalStaticRTP, error) {
+func peerConnectionSetup (conn *websocket.Conn, peerConnection *webrtc.PeerConnection) (*webrtc.TrackLocalStaticSample, *webrtc.TrackLocalStaticSample, error) {
 
-	// Create a video track            
-	videoTrack, err := webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264}, "video", "pion")
-	if err != nil {
-		panic(err)
+	// iceConnectedCtx, _ := context.WithCancel(context.Background())
+
+	// Create a video track
+	videoTrack, videoTrackErr := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264}, "video", "pion")
+	if videoTrackErr != nil {
+		panic(videoTrackErr)
 	}
 
-	rtpVideoSender, err := peerConnection.AddTrack(videoTrack)
-	if err != nil {
-		log.Fatal("Failed to add video track:", err)
+	rtpSender, videoTrackErr := peerConnection.AddTrack(videoTrack)
+	if videoTrackErr != nil {
+		panic(videoTrackErr)
 	}
 
-	// Read incoming RTCP packets
-	// Before these packets are returned they are processed by interceptors. For things
-	// like NACK this needs to be called.
 	go func() {
 		rtcpBuf := make([]byte, 1500)
 		for {
-			if _, _, rtcpErr := rtpVideoSender.Read(rtcpBuf); rtcpErr != nil {
-				log.Println("Error on RTCP reader")
+			if _, _, rtcpErr := rtpSender.Read(rtcpBuf); rtcpErr != nil {
 				return
 			}
 		}
 	}()
 
-	// Create an audio track
-	audioTrack, err := webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeOpus}, "audio", "pion")
-	if err != nil {
-		panic(err)
-	}
-	
-	rtpAudioSender, err := peerConnection.AddTrack(audioTrack)
-	if err != nil {
-		log.Fatal("Failed to add audio track:", err)
-	}
-
 	go func() {
-		rtcpBuf := make([]byte, 1500)
-		for {
-			if _, _, rtcpErr := rtpAudioSender.Read(rtcpBuf); rtcpErr != nil {
-				log.Println("Error on RTCP reader")
-				return
+		dataPipe, err := newCaptureStream(title)
+
+		if err != nil {
+			panic(err)
+		}
+
+		h264, h264Err := h264reader.NewReader(dataPipe)
+		if h264Err != nil {
+			panic(h264Err)
+		}
+
+		fmt.Println("Try to record")
+
+		// Wait for connection established
+		// <-iceConnectedCtx.Done()
+
+		// fmt.Println("BITE2")
+
+		// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
+		// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
+		//
+		// It is important to use a time.Ticker instead of time.Sleep because
+		// * avoids accumulating skew, just calling time.Sleep didn't compensate for the time spent parsing the data
+		// * works around latency issues with Sleep (see https://github.com/golang/go/issues/44343)
+		// spsAndPpsCache := []byte{}
+		// ticker := time.NewTicker(h264FrameDuration)
+		// for ; true; <-ticker.C {
+		// 	nal, h264Err := h264.NextNAL()
+		// 	if h264Err == io.EOF {
+		// 		fmt.Printf("All video frames parsed and sent")
+		// 		os.Exit(0)
+		// 	}
+		// 	if h264Err != nil {
+		// 		panic(h264Err)
+		// 	}
+
+		// 	nal.Data = append([]byte{0x00, 0x00, 0x00, 0x01}, nal.Data...)
+
+		// 	if nal.UnitType == h264reader.NalUnitTypeSPS || nal.UnitType == h264reader.NalUnitTypePPS {
+		// 		spsAndPpsCache = append(spsAndPpsCache, nal.Data...)
+		// 		continue
+		// 	} else if nal.UnitType == h264reader.NalUnitTypeCodedSliceIdr {
+		// 		nal.Data = append(spsAndPpsCache, nal.Data...)
+		// 		spsAndPpsCache = []byte{}
+		// 	}
+
+		// 	fmt.Println("GOGOGOGO")
+
+		// 	if h264Err = videoTrack.WriteSample(media.Sample{Data: nal.Data, Duration: time.Second}); h264Err != nil {
+		// 		panic(h264Err)
+		// 	}
+		// }
+		ticker := time.NewTicker(time.Millisecond * 33))
+		for ; true; <-ticker.C {
+			nal, h264Err := h264.NextNAL()
+			if h264Err == io.EOF {
+				fmt.Printf("All video frames parsed and sent")
+				os.Exit(0)
+			}
+			if h264Err != nil {
+				panic(h264Err)
+			}
+
+			if ivfErr != nil {
+				panic(ivfErr)
+			}
+
+			if h264Err = videoTrack.WriteSample(media.Sample{Data: nal.Data, Duration: time.Second}); h264Err != nil {
+				panic(h264Err)
 			}
 		}
 	}()
@@ -473,5 +467,5 @@ func peerConnectionSetup (conn *websocket.Conn, peerConnection *webrtc.PeerConne
 		}
 	})
 
-	return videoTrack, audioTrack, nil
+	return videoTrack, nil, nil
 }

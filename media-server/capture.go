@@ -9,6 +9,7 @@ import (
     "syscall"
 	"unicode/utf16"
 	"unsafe"
+	"io"
 )
 
 var (
@@ -84,25 +85,25 @@ func captureStream(windowTitle string) {
 		panic(err)
 	}
 
-	ffmpegCmdAudio, err = launchCommand(
-		"ffmpeg",
-		[]string{
-			"-stats_period", "10",
-			"-f", "dshow",					// Use something else ?
-			"-i", "audio=Mixage stéréo (Realtek(R) Audio)",
-			"-c:a", "libopus",
-			"-application", "lowdelay",    	// Enable low-delay mode for Opus
-			"-vbr", "off",
-			"-compression_level", "0",
-			"-frame_duration", "20",      	// Set the Opus frame duration to 20 ms for lower latency
-			"-vn",
-			"-f", "rtp", "rtp://127.0.0.1:5005",
-		},
-		"../logs/audio.log",
-	)
-	if err != nil {
-		panic(err)
-	}
+	// ffmpegCmdAudio, err = launchCommand(
+	// 	"ffmpeg",
+	// 	[]string{
+	// 		"-stats_period", "10",
+	// 		"-f", "dshow",					// Use something else ?
+	// 		"-i", "audio=Mixage stéréo (Realtek(R) Audio)",
+	// 		"-c:a", "libopus",
+	// 		"-application", "lowdelay",    	// Enable low-delay mode for Opus
+	// 		"-vbr", "off",
+	// 		"-compression_level", "0",
+	// 		"-frame_duration", "20",      	// Set the Opus frame duration to 20 ms for lower latency
+	// 		"-vn",
+	// 		"-f", "rtp", "rtp://127.0.0.1:5005",
+	// 	},
+	// 	"../logs/audio.log",
+	// )
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	time.Sleep(500 * time.Millisecond)
 }
@@ -235,4 +236,103 @@ func stopProcess(cmd *exec.Cmd) {
 func stopAllCapture() {
 	stopProcess(ffmpegCmdVideo)
 	stopProcess(ffmpegCmdAudio)
+}
+
+func RunCommand(name string, arg ...string) (io.ReadCloser, error) {
+	cmd := exec.Command(name, arg...)
+	fmt.Println(cmd)
+
+	dataPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	return dataPipe, nil
+}
+
+func newCaptureStream(windowTitle string) (io.ReadCloser, error) {
+	fmt.Println("Trying to capture video stream")
+	var err error
+
+	// Used for debugging
+	if windowTitle == "" {
+		titles := getWindowTitles()
+		fmt.Println("[Window Titles (visible)]")
+		for i, title := range titles {
+			fmt.Printf("%d: %s\n", i, title)
+		}
+
+		// Wait for index input after the loop
+		var index int
+		index = -1
+		fmt.Print("Enter the index of the window you want to select: ")
+		fmt.Scanln(&index)
+
+		// Perform further operations based on the selected index
+		if index >= 0 && index < len(titles) {
+			fmt.Println("You selected window title:", titles[index])
+			windowTitle = titles[index]
+		} else {
+			fmt.Println("Invalid index. Please enter a valid index.")
+			panic(0)
+		}
+	}
+
+	fmt.Println("Got a window to capture")
+	fmt.Println("#"+windowTitle+"#")
+
+	command := "ffmpeg"
+	// args := []string{
+	// 	"-stats_period", "10",
+	// 	"-f", "gdigrab",
+	// 	"-thread_queue_size", "1024",
+	// 	"-framerate", "10",
+	// 	// "-i", "title="+windowTitle, // desktop works tooZ
+	// 	"-vf", "scale=-1:720",
+	// 	"-i", "desktop",
+	// 	"-c:v", "libx264",
+	// 	"-preset", "ultrafast",
+	// 	"-tune", "zerolatency",
+	// 	"-crf", "25",
+	// 	"-pix_fmt", "yuv420p",
+	// 	"-an",
+	// 	"-f", "h264",
+	// 	"-",
+	// }
+
+	args := []string{
+		"-video_size", "1920x1080", "-framerate", "30", "-f", "gdigrab", "-i", "desktop", "-c:v", "libx264", "-preset", "ultrafast", "-color_range", "2", "-f", "h264", "-",
+	}
+
+	filePath := "../logs/video.log"
+
+	fmt.Println(args)
+
+	cmd := exec.Command(command, args...)
+	fmt.Println(cmd)
+
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer outFile.Close()
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP}
+	// cmd.Stdout = outFile
+	cmd.Stderr = outFile
+
+	dataPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+
+	return dataPipe, nil
 }
