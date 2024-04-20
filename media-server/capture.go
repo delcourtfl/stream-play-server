@@ -68,9 +68,10 @@ func captureStream(windowTitle string) {
 			"-framerate", "30",
 			"-i", "title="+windowTitle, // desktop works tooZ
 			// "-i", "desktop",
-			"-vf", "scale=-1:720",
+			// "-vf", "scale=-1:720",
 			// "-vf", "scale=1280:720",
-			"-c:v", "libx264",
+			"-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+			"-c:v", "h264",
 			"-preset", "ultrafast",
 			"-tune", "zerolatency",
 			"-crf", "25",

@@ -8,6 +8,7 @@
             <button class="tablinks" onclick="openTab(event, 'Game')" id="default">Game</button>
             <button class="tablinks" onclick="openTab(event, 'Controllers')">Controllers</button>
             <button class="tablinks" onclick="openTab(event, 'Connection')">Connection</button>
+            <button class="tablinks" onclick="openTab(event, 'Capture')">Capture</button>
         </div>
         
         <div id="Game" class="tabcontent">
@@ -93,6 +94,13 @@
                 <!-- More chat messages -->
             </div>
         </div>
+
+        <div id="Capture" class="tabcontent">
+            <h2>Capture</h2>
+            <p>Click the button below to start screen capture:</p>
+            <button id="startButton" onclick="startCaptureAndDisplay()">Start Capture</button>
+            <video id="captureVideo" controls autoplay muted playsinline></video>
+        </div>
     
         <script>
 
@@ -147,5 +155,6 @@
         </script>
         <script src="connect.js"></script>
         <script src="inputs.js"></script>
+        <script src="capture.js"></script>
     </body>
 </html>
