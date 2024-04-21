@@ -2,14 +2,14 @@ package main
 
 import (
 	"net/http"
-	"net/http/httputil"
-	"net/url"
+	// "net/http/httputil"
+	// "net/url"
 	"log"
 	"os"
 
 	"bufio"
-	"strings"
-	"path/filepath"
+	// "strings"
+	// "path/filepath"
 	"bytes"
 )
 
@@ -45,27 +45,35 @@ func main() {
 	log.Println(targetPort)
 
 	serverPort := "80"
-	streamTarget := "http://" + serverIP + ":" + targetPort
+	// streamTarget := "http://" + serverIP + ":" + targetPort
+	
+	// Serve the static files from the React build directory
+	http.Handle("/", http.FileServer(http.Dir("../ui/build")))
 
-	// Handle requests for static files for the client page
-	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Client request: %s %s\n", r.Method, r.URL.Path)
-		http.FileServer(http.Dir("client")).ServeHTTP(w, r)
-	}))
+	// Start the server
+	addr := serverIP + ":" + serverPort
+	log.Printf("Server listening on %s\n", addr)
+	// log.Fatal(http.ListenAndServe(addr, nil))
+
+	// // Handle requests for static files for the client page
+	// http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	log.Printf("Client request: %s %s\n", r.Method, r.URL.Path)
+	// 	http.FileServer(http.Dir("client")).ServeHTTP(w, r)
+	// }))
 
 	// Handle requests for static files for the admin page
-	http.Handle("/admin/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Admin request: %s %s\n", r.Method, r.URL.Path)
-		http.StripPrefix("/admin/", http.FileServer(http.Dir("admin"))).ServeHTTP(w, r)
-	}))
+	// http.Handle("/admin/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	log.Printf("Admin request: %s %s\n", r.Method, r.URL.Path)
+	// 	http.StripPrefix("/admin/", http.FileServer(http.Dir("admin"))).ServeHTTP(w, r)
+	// }))
 
-	proxyTarget, _ := url.Parse(streamTarget)
-	proxy := httputil.NewSingleHostReverseProxy(proxyTarget)
+	// proxyTarget, _ := url.Parse(streamTarget)
+	// proxy := httputil.NewSingleHostReverseProxy(proxyTarget)
 
-	http.HandleFunc("/stream", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Stream request: %s %s\n", r.Method, r.URL.Path)
-		proxy.ServeHTTP(w, r)
-	})
+	// http.HandleFunc("/stream", func(w http.ResponseWriter, r *http.Request) {
+	// 	log.Printf("Stream request: %s %s\n", r.Method, r.URL.Path)
+	// 	proxy.ServeHTTP(w, r)
+	// })
 
 	// Add a new handler for serving the log file content to the admin page
 	http.HandleFunc("/admin/logs/", func(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +125,9 @@ func main() {
 		}
 	})
 
-	http.ListenAndServe(serverIP+":"+serverPort, nil)
+	// http.ListenAndServe(serverIP+":"+serverPort, nil)
+
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 

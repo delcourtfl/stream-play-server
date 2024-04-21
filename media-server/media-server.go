@@ -65,7 +65,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	// Start capturing the specified application window
-	captureStream(title)
+	// captureStream(title)
 	// Use a defer statement to ensure the command process is killed when the main function exits
 	defer stopAllCapture()
 	log.Println("Capturing...")
