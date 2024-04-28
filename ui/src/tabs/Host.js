@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import Button from '@mui/joy/Button';
+import Box from '@mui/joy/Box';
 
-const HostMedia = ({ streamHook }) => {
+const HostMedia = ({ castHook }) => {
     
     async function startCapture(displayMediaOptions) {
         try {
@@ -12,30 +13,46 @@ const HostMedia = ({ streamHook }) => {
         }
     }
 
-    function handleSuccess(stream) {
-        const videoElement = document.getElementById('captureVideo');
-        if (videoElement) {
-            videoElement.srcObject = stream;
+    const setStreamAsSource = (stream) => {
+        if (castHook.captureRef && castHook.captureRef.current && stream) {
+            castHook.captureRef.current.srcObject = stream;
+            // Start sending on the webrtc connection
+            console.log("Cast Mirror is set");
         }
-        console.log("end");
     }
 
     async function startCaptureAndDisplay() {
         const displayMediaOptions = { video: true }; // You can customize options here
 
         const stream = await startCapture(displayMediaOptions);
+        castHook.setCaptureStream(stream);
         if (stream) {
-            handleSuccess(stream);
+            setStreamAsSource(stream);
         } else {
             console.error("Failed to capture media stream.");
         }
     }
 
+    useEffect(() => {
+        if (castHook.captureStream) {
+            setStreamAsSource(castHook.captureStream)
+        }
+    }, []);
+
     return (
-        <div>
-            <video id="captureVideo" autoPlay controls style={{ width: '100%', height: 'auto' }} />
-            <Button fullWidth={true} size='lg' onClick={startCaptureAndDisplay}>Start Capture</Button>
-        </div>
+        <Box
+            sx={{
+                width: '100vw',
+                height: '100vh',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                objectFit: 'contain', // Ensure video takes full space
+            }}
+        >
+            <Button fullWidth={true} size='lg' onClick={startCaptureAndDisplay} sx={{height: '5%'}}>Start Capture</Button>
+            <video ref={castHook.captureRef} id="captureVideo" autoPlay controls style={{ width: '100%', height: '90%', objectFit: 'contain' }} />
+        </Box>
     );
 };
 
