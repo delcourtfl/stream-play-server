@@ -5,21 +5,15 @@ const CastHook = () => {
     const [captureStream, setCaptureStream] = useState(null);
     const captureRef = useRef(null);
 
-    const [testAudioButton, setTestAudioButton] = useState(false);
-    const [testVideoButton, setTestVideoButton] = useState(true);
-
     const [signalingSocket, setSignalingSocket] = useState(null);
     const [peerConnection, setPeerConnection] = useState(null);
     const [dataChannel, setDataChannel] = useState(null);
 
     const [lastMessage, setLastMessage] = useState(null);
 
-    // const setStream = (stream) => {
-    //     setVideoStream(stream);
-    // };
-
     // Function to fetch and use the configuration
     async function loadConfig() {
+
         try {
             console.log("Loading IP/Port")
             const response = await fetch('wconfig.json');
@@ -47,10 +41,6 @@ const CastHook = () => {
                 }
                 signalingSocket.send(JSON.stringify(message));
             };
-
-            // captureStream.getTracks().forEach(track => peerConnection.addTrack(track, captureStream));
-            // console.log(captureStream.getTracks());
-            // console.log(peerConnection)
 
             // Create a data channel to send data
             const dataChannel = peerConnection.createDataChannel("data");
@@ -108,46 +98,6 @@ const CastHook = () => {
         }
     }, [lastMessage]);
 
-    // async function createPeerConnection() {
-    //     const peerConnection = new RTCPeerConnection();
-    //     // Create a data channel to send data
-    //     const dataChannel = peerConnection.createDataChannel("data");
-
-    //     dataChannel.addEventListener("open", () => {
-    //         console.log("Data channel initiated");
-    //     });
-
-    //     dataChannel.onmessage = function(event) {
-    //         var message = event.data;
-    //         console.log("Received message:");
-    //         console.log(message);
-    //     };
-
-    //     peerConnection.onicecandidate = e => {
-    //         const message = {
-    //             type: 'candidate',
-    //             candidate: null,
-    //         };
-    //         if (e.candidate) {
-    //             message.candidate = e.candidate.candidate;
-    //             message.sdpMid = e.candidate.sdpMid;
-    //             message.sdpMLineIndex = e.candidate.sdpMLineIndex;
-    //         }
-    //         // signalingSocket.postMessage(message);
-    //         signalingSocket.send(JSON.stringify(message));
-    //     };
-    //     if (videoRef.current) {
-    //         peerConnection.ontrack = e => videoRef.current.srcObject = e.streams[0];
-    //     }
-    //     if (captureStream) {
-    //         captureStream.getTracks().forEach(track => peerConnection.addTrack(track, captureStream));
-    //     }
-
-    //     // setPeerConnection(peerConnection);
-    //     // setDataChannel(dataChannel);
-    //     // return peerConnection;
-    // }
-
     async function handleOffer(offer) {
         if (!peerConnection) {
             console.error('no peerconnection for offer');
@@ -166,17 +116,6 @@ const CastHook = () => {
         await peerConnection.setLocalDescription(answer);
     }
     
-    // async function handleAnswer(answer) {
-    //     if (!peerConnection) {
-    //         console.error('no peerconnection for answer');
-    //         return;
-    //     }
-    //     if (peerConnection.currentRemoteDescription) {
-    //         console.log("Connection was already established with a peer.")
-    //     }
-    //     await peerConnection.setRemoteDescription(answer);
-    // }
-    
     async function handleCandidate(candidate) {
         if (!peerConnection) {
             console.error('no peerconnection for candidate');
@@ -188,28 +127,6 @@ const CastHook = () => {
             await peerConnection.addIceCandidate(candidate);
         }
     }
-
-    // async function initConnection() {
-    //     if (!peerConnection) {
-    //         console.error('no peerconnection for init');
-    //         return;
-    //     }
-
-    //     // if (testAudioButton) {
-    //     //     peerConnection.addTransceiver('audio', {'direction': 'recvonly'})
-    //     // } 
-        
-    //     // if (testVideoButton) {
-    //     //     peerConnection.addTransceiver('video', {'direction': 'recvonly'})
-    //     // }
-    
-    //     const offer = await peerConnection.createOffer();
-    //     signalingSocket.send(JSON.stringify({
-    //         type: 'offer',
-    //         data:  offer
-    //     }));
-    //     await peerConnection.setLocalDescription(offer);
-    // }
 
     function send(data) {
         if (!dataChannel) {
@@ -240,23 +157,10 @@ const CastHook = () => {
     }, [captureStream]);
 
     return { 
-        // setStream,
-        testAudioButton,
-        setTestAudioButton,
-        testVideoButton,
-        setTestVideoButton,
         setupDisplay,
-        // setupPeerConnection,
-        //
         captureRef,
         setCaptureStream,
         captureStream,
-        //
-        // videoRef,
-        // setVideoStream,
-        // videoStream,
-        //
-        // initConnection,
     };
 };
 

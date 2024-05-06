@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 	"os"
+	"time"
 	
 	"github.com/gorilla/websocket"
 )
@@ -48,7 +49,7 @@ func main() {
 			log.Println("Failed to upgrade WebSocket connection:", err)
 			return
 		}
-		log.Println("Got a new client")
+		log.Println("Got a new client : " + conn.RemoteAddr().String())
 		// Add the new client to the list
 		clients.Lock()
 		clients.list[conn] = true
@@ -59,10 +60,24 @@ func main() {
 
 	log.Println("Signaling server started on " + ip + ":" + port)
 
+	go printClientAddresses()
+
 	// Start the HTTP server
 	err := http.ListenAndServe(ip + ":" + port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
+	}
+
+}
+
+func printClientAddresses() {
+	for {
+		var addresses []string
+		for conn := range clients.list {
+			addresses = append(addresses, conn.RemoteAddr().String())
+		}
+		log.Println("Client addresses:", addresses)
+		time.Sleep(10 * time.Second) // Adjust the sleep duration as needed
 	}
 }
 

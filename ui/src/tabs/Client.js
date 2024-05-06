@@ -16,6 +16,7 @@ const ClientConnectionTab = ({ streamHook }) => {
 
     return (
         <div id="Connection" className="tabcontent">
+            <Button id="startWS" onClick={streamHook.loadConfig}> Connect </Button>
             <Button id="connectPC" onClick={streamHook.initConnection}> Connect </Button>
             <Button id="retryFFMPEG" onClick={streamHook.setupDisplay}> DisplayRetry </Button>
             <Button id="testAudio" onClick={testAudio}> Audio : {streamHook.testAudioButton ? 'true' : 'false'}</Button>
