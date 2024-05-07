@@ -51,7 +51,8 @@ const HostMedia = ({ castHook }) => {
             }}
         >
             <Button fullWidth={true} size='lg' onClick={startCaptureAndDisplay} sx={{height: '5%'}}>Start Capture</Button>
-            <video ref={castHook.captureRef} id="captureVideo" autoPlay controls style={{ width: '100%', height: '90%', objectFit: 'contain' }} />
+            <video ref={castHook.captureRef} id="captureVideo" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
+            <video ref={castHook.captureRef2} id="captureVideo2" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
         </Box>
     );
 };
