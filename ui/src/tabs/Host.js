@@ -13,21 +13,32 @@ const HostMedia = ({ castHook }) => {
         }
     }
 
-    const setStreamAsSource = (stream) => {
-        if (castHook.captureRef && castHook.captureRef.current && stream) {
-            castHook.captureRef.current.srcObject = stream;
-            // Start sending on the webrtc connection
-            console.log("Cast Mirror is set");
+    const setLocalStream = () => {
+        if (castHook.captureRef && castHook.captureRef.current && castHook.captureStream) {
+            castHook.captureRef.current.srcObject = castHook.captureStream;
+            console.log("Local video is set");
         }
     }
 
-    async function startCaptureAndDisplay() {
+    const setRemoteStream = () => {
+        if (castHook.videoRef && castHook.videoRef.current && castHook.videoStream) {
+            castHook.videoRef.current.srcObject = castHook.videoStream;
+            console.log("Remote video is set");
+        }
+    }
+
+    async function startCall() {
         const displayMediaOptions = { video: true }; // You can customize options here
 
         const stream = await startCapture(displayMediaOptions);
         castHook.setCaptureStream(stream);
         if (stream) {
-            setStreamAsSource(stream);
+            setLocalStream();
+            castHook.setStartDisabled(true);
+            castHook.setHangupDisabled(false);
+            castHook.signalingSocket.send(JSON.stringify({
+                type: 'ready'
+            }));
         } else {
             console.error("Failed to capture media stream.");
         }
@@ -35,9 +46,21 @@ const HostMedia = ({ castHook }) => {
 
     useEffect(() => {
         if (castHook.captureStream) {
-            setStreamAsSource(castHook.captureStream)
+            setLocalStream();
+        }
+        if (castHook.videoStream) {
+            setRemoteStream();
         }
     }, []);
+
+    useEffect(() => {
+        if (castHook.captureStream) {
+            setLocalStream();
+        }
+        if (castHook.videoStream) {
+            setRemoteStream();
+        }
+    }, [castHook.captureStream, castHook.videoStream]);
 
     return (
         <Box
@@ -50,9 +73,15 @@ const HostMedia = ({ castHook }) => {
                 objectFit: 'contain', // Ensure video takes full space
             }}
         >
-            <Button fullWidth={true} size='lg' onClick={startCaptureAndDisplay} sx={{height: '5%'}}>Start Capture</Button>
-            <video ref={castHook.captureRef} id="captureVideo" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
-            <video ref={castHook.captureRef2} id="captureVideo2" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
+            <Button id="loadButton" disabled={!!castHook.signalingSocket} onClick={castHook.loadConfig}>Load Config</Button>
+            <Button id="startButton" disabled={castHook.startDisabled} onClick={startCall}>Start</Button>
+            <Button id="hangupButton" disabled={castHook.hangupDisabled} onClick={castHook.hangupCall}>Hang Up</Button>
+            {/* <Button fullWidth={true} size='lg' onClick={startCaptureAndDisplay} sx={{height: '5%'}}>Start Capture</Button> */}
+            <video ref={castHook.captureRef} id="localVideo" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
+            <video ref={castHook.videoRef} id="remoteVideo" autoPlay controls style={{ width: '100%', height: '45%', objectFit: 'contain' }} />
+            {/* <div> */}
+            {/* <video id="localVideo" autoPlay muted srcObject={localStream}></video> */}
+            {/* <video id="remoteVideo" autoPlay></video> */}
         </Box>
     );
 };
