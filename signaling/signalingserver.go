@@ -128,6 +128,7 @@ func broadcastMessage(sender *websocket.Conn, msg []byte) {
 			continue
 		}
 		err := client.WriteMessage(websocket.TextMessage, msg)
+		// log.Println("Receiver:", client.RemoteAddr().String())
 		if err != nil {
 			log.Println("Failed to send signaling message to client:", err)
 		}

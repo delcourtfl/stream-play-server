@@ -1,20 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 
 const StreamHook = () => {
+
+    const [captureStream, setCaptureStream] = useState(null);
+    const captureRef = useRef(null);
+
     const [videoStream, setVideoStream] = useState(null);
     const videoRef = useRef(null);
 
-    const [testAudioButton, setTestAudioButton] = useState(false);
-    const [testVideoButton, setTestVideoButton] = useState(true);
+    const [readyState, setReadyState] = useState(WebSocket.CLOSED);
 
     const [signalingSocket, setSignalingSocket] = useState(null);
+    
     const [peerConnection, setPeerConnection] = useState(null);
     const [dataChannel, setDataChannel] = useState(null);
 
     const [lastMessage, setLastMessage] = useState(null);
 
+    const [startDisabled, setStartDisabled] = useState(true);
+    const [hangupDisabled, setHangupDisabled] = useState(true);
+
     // Function to fetch and use the configuration
     async function loadConfig() {
+
         try {
             console.log("Loading IP/Port")
             const response = await fetch('wconfig.json');
@@ -24,189 +32,218 @@ const StreamHook = () => {
             const serverIP = config.ip_address;
             const serverPort = config.port;
             const signalingSocket = new WebSocket('ws://' + serverIP + ':' + serverPort + '/stream');
+            setReadyState(WebSocket.CONNECTING);
+            signalingSocket.onopen = () => setReadyState(WebSocket.OPEN);
+            signalingSocket.onclose = () => setReadyState(WebSocket.CLOSED);
 
-            console.log("Server IP:", serverIP);
-            console.log("Server Port:", serverPort);
-
-            const peerConnection = new RTCPeerConnection();
-
-            peerConnection.onicecandidate = e => {
-                const message = {
-                    type: 'candidate',
-                    candidate: null,
-                };
-                if (e.candidate) {
-                    message.candidate = e.candidate.candidate;
-                    message.sdpMid = e.candidate.sdpMid;
-                    message.sdpMLineIndex = e.candidate.sdpMLineIndex;
-                }
-                signalingSocket.send(JSON.stringify(message));
-            };
-
-            peerConnection.oniceconnectionstatechange = function(event) {
-                console.log(peerConnection.iceConnectionState);
-                if (peerConnection.iceConnectionState === 'connected') {
-                    console.log("Closing WebSocket");
-                    signalingSocket.close();
-                }
-            };
-
-            peerConnection.ontrack = function (event) {
-                console.log("Got something")
-                console.log("new track : " + event.track.kind);
-                setVideoStream(event.streams[0]);
-            };
-
-            // Create a data channel to send data
-            const dataChannel = peerConnection.createDataChannel("data");
-
-            dataChannel.addEventListener("open", () => {
-                console.log("Data channel initiated");
-            });
-
-            dataChannel.onmessage = function (event) {
-                var message = event.data;
-                console.log("Received message:");
-                console.log(message);
-            };
+            console.log("Server IP:", serverIP, "Server Port:", serverPort);
 
             signalingSocket.onmessage = async (event) => {
                 const message = JSON.parse(event.data);
-                console.log(message);
                 setLastMessage(message);
             };
 
             setSignalingSocket(signalingSocket);
-            setPeerConnection(peerConnection);
-            setDataChannel(dataChannel);
-            
             console.log("Load Config Success");
-
+            setStartDisabled(false);
         } catch (error) {
             console.error('Error loading configuration:', error);
         }
     }
 
-    // useEffect(() => {
-    //     // Log peerConnection whenever it changes
-    //     console.log('Updated peerConnection:', peerConnection);
-    // }, [peerConnection]); // Run whenever peerConnection changes
-
     useEffect(() => {
         // Check the last message whenever it changes
         if (lastMessage) {
-            console.log('Last message received:', lastMessage);
 
-            if (lastMessage.type === 'offer') {
-
-                console.log("No need for an offer");
-
-            } else if (lastMessage.type === 'answer') {
-
-                handleAnswer(lastMessage.data);
-
-            } else if (lastMessage.type === 'candidate') {
-
-                console.log("No need for a candidate");
-
-            } else {
-                console.log('Unknown message type:', lastMessage.type);
+            switch (lastMessage.type) {
+                case 'offer':
+                    console.log('Received offer');
+                    handleOffer(lastMessage);
+                    break;
+                case 'answer':
+                    console.log("Received answer");
+                    handleAnswer(lastMessage);
+                    break;
+                case 'candidate':
+                    console.log('Received ICE candidate');
+                    handleCandidate(lastMessage);
+                    break;
+                case 'ready':
+                    console.log('Received Ready');
+                    if (peerConnection) {
+                        console.log('Already in call, ignoring');
+                    } else {
+                        makeCall();
+                    }
+                    break;
+                case 'bye':
+                    console.log('Received Bye');
+                    if (peerConnection) {
+                        hangup();
+                    }
+                    break;
+                default:
+                    console.log('Received Unknown message type:', lastMessage.type);
+                    break;
             }
         }
     }, [lastMessage]);
 
-    useEffect(() => {
-        if (videoRef && videoRef.current && videoRef.current.srcObject) {
-            console.log("media stream object created");
-            videoRef.current.srcObject = videoStream;
-        } else {
-            // videoRef.current.srcObject.addTrack(event.track);
-            // console.log(videoRef);
-            // console.log(videoStream);
-            console.log("Can't add stream to video element ...");
+    async function handleOffer(offer) {
+        if (peerConnection) {
+            console.error('existing peerconnection for offer');
+            return;
         }
-    }, [videoStream, videoRef]);
-
-    // useEffect(() => {
-    //     console.log(videoRef);
-    // }, [videoRef]);
     
+        const pc = await createPeerConnection();
+        if (captureStream) {
+            captureStream.getTracks().forEach(track => {
+                console.log("Track:", track);
+                pc.addTrack(track, captureStream);
+            });
+        }
+        await pc.setRemoteDescription(offer);
+        
+        const answer = await pc.createAnswer();
+        signalingSocket.send(JSON.stringify({
+            type: 'answer',
+            sdp:  answer.sdp
+        }));
+        await pc.setLocalDescription(answer);
+        setPeerConnection(pc);
+    }
+    
+    async function handleCandidate(candidate) {
+        if (!peerConnection) {
+            console.error('no peerconnection for candidate');
+            return;
+        }
+        if (!candidate.candidate) {
+            await peerConnection.addIceCandidate(null);
+        } else {
+            await peerConnection.addIceCandidate(candidate);
+        }
+    }
+
     async function handleAnswer(answer) {
         if (!peerConnection) {
             console.error('no peerconnection for answer');
             return;
         }
-        console.log("Got answer ?");
-        console.log(answer);
-        // console.log("Connection was already established with a peer00000000000000000000.");
-        if (peerConnection.currentRemoteDescription) {
-            console.log("Connection was already established with a peer.");
-            return;
-        }
         await peerConnection.setRemoteDescription(answer);
     }
 
-    async function initConnection() {
-        if (!peerConnection) {
-            console.error('no peerconnection for init');
-            return;
+    async function createPeerConnection() {
+
+        const pc = new RTCPeerConnection();
+
+        pc.onicecandidate = e => {
+            const message = {
+                type: 'candidate',
+                candidate: null,
+            };
+            if (e.candidate) {
+                message.candidate = e.candidate.candidate;
+                message.sdpMid = e.candidate.sdpMid;
+                message.sdpMLineIndex = e.candidate.sdpMLineIndex;
+            }
+            signalingSocket.send(JSON.stringify(message));
+        };
+
+        pc.ontrack = function (event) {
+            console.log("Got something")
+            console.log("new track : " + event.track.kind);
+            console.log(event.streams[0]);
+            setVideoStream(event.streams[0]);
+        };
+
+        // Create a data channel to send data
+        const dataChannel = pc.createDataChannel("data");
+
+        dataChannel.addEventListener("open", () => {
+            console.log("Data channel initiated");
+        });
+
+        dataChannel.onmessage = function (event) {
+            var message = event.data;
+            console.log("Received message:");
+            console.log(message);
+        };
+
+        setDataChannel(dataChannel);
+
+        return pc;
+    }
+
+    async function hangup() {
+        if (peerConnection) {
+            peerConnection.close();
+            setPeerConnection(null);
+            // peerConnection = null;
+        }
+        captureStream.getTracks().forEach(track => track.stop());
+        setCaptureStream(null);
+        setStartDisabled(false);
+        setHangupDisabled(true);
+    };
+  
+    async function makeCall() {
+        const pc = await createPeerConnection();
+
+        if (captureStream) {
+            captureStream.getTracks().forEach(track => {
+                console.log("Track:", track);
+                pc.addTrack(track, captureStream);
+            });
+            // captureStream.getTracks().forEach(track => peerConnection.addTrack(track, captureStream));
         }
 
-        if (testAudioButton) {
-            peerConnection.addTransceiver('audio', {'direction': 'recvonly'})
-        } 
-        
-        if (testVideoButton) {
-            peerConnection.addTransceiver('video', {'direction': 'recvonly'})
-        }
-    
-        const offer = await peerConnection.createOffer();
+        const offerOptions = {
+            offerToReceiveAudio: 1,
+            offerToReceiveVideo: 1
+        };
+  
+        const offer = await pc.createOffer(offerOptions);
         signalingSocket.send(JSON.stringify({
             type: 'offer',
-            data:  offer
+            sdp:  offer.sdp
         }));
-        await peerConnection.setLocalDescription(offer);
+        await pc.setLocalDescription(offer);
+        setPeerConnection(pc);
     }
-
-    function send(data) {
-        if (!dataChannel) {
-            console.error("Data Channel is not initialized.")
-            return;
-        }
-        dataChannel.send(JSON.stringify(data));
-    }
-
-    function setupDisplay() {
-        console.log("RETRY DISPLAY");
-        send({
-            type: "DISPLAY",
-            data: "",
-        });
-    }
+    
+    const hangupCall = () => {
+        hangup();
+        signalingSocket.send(JSON.stringify({
+            type: 'bye',
+        }));
+    };
 
     // useEffect(() => {
-    //     if (peerConnection) {
-    //         initConnection();
+    //     if (videoRef && videoRef.current && videoRef.current.srcObject) {
+    //         console.log("media stream object created");
+    //         videoRef.current.srcObject = videoStream;
+    //     } else {
+    //         console.log("Can't add stream to video element ...");
+    //         console.log(videoStream);
     //     }
-    // }, [peerConnection]);
-
-    // useEffect(() => {
-    //     // Call the function to load the configuration
-    //     console.log("fhfhfhfhfh")
-    //     loadConfig();
-    // }, []);
+    // }, [videoStream, videoRef]);
 
     return { 
-        testAudioButton,
-        setTestAudioButton,
-        testVideoButton,
-        setTestVideoButton,
-        setupDisplay,
-        videoRef,
+        // setupDisplay,
+        captureRef,
+        setCaptureStream,
+        captureStream,
         setVideoStream,
         videoStream,
-        initConnection,
-        loadConfig
+        hangupCall,
+        startDisabled,
+        setStartDisabled,
+        hangupDisabled,
+        setHangupDisabled,
+        loadConfig,
+        signalingSocket,
+        videoRef
     };
 };
 

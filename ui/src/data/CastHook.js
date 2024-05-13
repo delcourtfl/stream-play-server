@@ -11,6 +11,7 @@ const CastHook = () => {
     const [readyState, setReadyState] = useState(WebSocket.CLOSED);
 
     const [signalingSocket, setSignalingSocket] = useState(null);
+    
     const [peerConnection, setPeerConnection] = useState(null);
     const [dataChannel, setDataChannel] = useState(null);
 
@@ -169,7 +170,6 @@ const CastHook = () => {
             console.log(message);
         };
 
-        // setPeerConnection(peerConnection);
         setDataChannel(dataChannel);
 
         return pc;

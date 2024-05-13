@@ -28,7 +28,7 @@ const HostMedia = ({ castHook }) => {
     }
 
     async function startCall() {
-        const displayMediaOptions = { video: true }; // You can customize options here
+        const displayMediaOptions = { video: true, audio: true }; // You can customize options here
 
         const stream = await startCapture(displayMediaOptions);
         castHook.setCaptureStream(stream);
@@ -44,14 +44,10 @@ const HostMedia = ({ castHook }) => {
         }
     }
 
-    useEffect(() => {
-        if (castHook.captureStream) {
-            setLocalStream();
-        }
-        if (castHook.videoStream) {
-            setRemoteStream();
-        }
-    }, []);
+    // useEffect(() => {
+    //     setLocalStream();
+    //     setRemoteStream();
+    // }, []);
 
     useEffect(() => {
         if (castHook.captureStream) {
