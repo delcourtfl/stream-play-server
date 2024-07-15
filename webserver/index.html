@@ -7,15 +7,14 @@
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Game')" id="default">Game</button>
             <button class="tablinks" onclick="openTab(event, 'Controllers')">Controllers</button>
-            <button class="tablinks" onclick="openTab(event, 'Connection')">Connection</button>
+            <!-- <button class="tablinks" onclick="openTab(event, 'Connection')">Connection</button> -->
             <button class="tablinks" onclick="openTab(event, 'Capture')">Capture</button>
         </div>
         
         <div id="Game" class="tabcontent">
-            <video id="video" controls autoplay muted playsinline></video>
-            
+            <video id="remoteVideo" controls autoplay muted playsinline></video>
         </div>
-        
+
         <div id="Controllers" class="tabcontent">
             <button id="map"> Map </button>
             <button id="defaultmap"> DefaultMap </button>
@@ -84,22 +83,20 @@
             </div>
         </div>
         
-        <div id="Connection" class="tabcontent">
+        <!-- <div id="Connection" class="tabcontent">
             <button id="connectPC"> Connect </button>
             <button id="retryFFMPEG"> DisplayRetry </button>
             <button id="testAudio"> Audio : false </button>
             <button id="testVideo"> Video : true </button> 
             <div id="logContainer" class="chat-window">
                 <div class="chat-message">Browser : Hello there!</div>
-                <!-- More chat messages -->
             </div>
-        </div>
+        </div> -->
 
         <div id="Capture" class="tabcontent">
-            <h2>Capture</h2>
-            <p>Click the button below to start screen capture:</p>
-            <button id="startButton" onclick="startCaptureAndDisplay()">Start Capture</button>
-            <video id="captureVideo" controls autoplay muted playsinline></video>
+            <button id="startButton"> Start Capture </button>
+            <button id="callButton"> Join Call </button>
+            <video id="localVideo" controls autoplay muted playsinline></video>
         </div>
     
         <script>
@@ -122,39 +119,7 @@
         // Get a reference to the log container
         const logContainer = document.getElementById('logContainer');
 
-        const originalConsoleLog = console.log;
-        const originalConsoleError = console.error;
-
-        // Override console.log to capture the messages
-        console.log = function(...args) {
-            const message = args.join(' ');
-            // Create a new <div> element for the chat message
-            const chatMessage = document.createElement("div");
-            chatMessage.classList.add("chat-message");
-            chatMessage.textContent = "Browser : " + message;
-            // Append the new chat message to the logContainer
-            logContainer.appendChild(chatMessage);
-
-            // Call the original console.log to display the message in the console
-            originalConsoleLog(...args);
-        };
-
-        console.error = function(...args) {
-            const message = args.join(' ');
-            // Create a new <div> element for the chat message
-            const chatMessage = document.createElement("div");
-            chatMessage.classList.add("chat-message");
-            chatMessage.textContent = message
-            // Append the new chat message to the logContainer
-            logContainer.appendChild(chatMessage);
-
-            // Call the original console.log to display the message in the console
-            originalConsoleError(...args);
-        };
-
         </script>
-        <script src="connect.js"></script>
-        <script src="inputs.js"></script>
-        <script src="capture.js"></script>
+        <script type="module" src="main.js"></script>
     </body>
 </html>

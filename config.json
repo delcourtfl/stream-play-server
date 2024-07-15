@@ -1,5 +1,5 @@
 {
     "ip_address": "localhost",
-    "port": "3000",
-    "window_name": ""
+    "web_port": "3000",
+    "sign_port": "3001"
 }

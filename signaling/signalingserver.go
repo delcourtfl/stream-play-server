@@ -3,16 +3,16 @@ package main
 import (
 	"log"
 	"net/http"
-	"sync"
 	"os"
+	"sync"
 	"time"
-	
+
 	"github.com/gorilla/websocket"
 )
 
 var (
-	ip    string 		// IP address for WebSocket connection
-	port  string        // Port number for WebSocket connection
+	ip   string // IP address for WebSocket connection
+	port string // Port number for WebSocket connection
 )
 
 var upgrader = websocket.Upgrader{
@@ -63,7 +63,7 @@ func main() {
 	go printClientAddresses()
 
 	// Start the HTTP server
-	err := http.ListenAndServe(ip + ":" + port, nil)
+	err := http.ListenAndServe(ip+":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

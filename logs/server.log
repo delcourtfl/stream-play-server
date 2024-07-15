@@ -1,9 +1,4 @@
-2024/04/20 17:46:30 localhost
-2024/04/20 17:46:30 3000
-2024/04/20 17:46:30 capture.js - stream-play-server - Visual Studio Code
-Trying to capture video stream
-Got a window to capture
-#capture.js - stream-play-server - Visual Studio Code#
-C:\ProgramData\chocolatey\bin\ffmpeg.exe -stats_period 10 -f gdigrab -thread_queue_size 1024 -framerate 30 -i title=capture.js - stream-play-server - Visual Studio Code -vf pad=ceil(iw/2)*2:ceil(ih/2)*2 -c:v h264 -preset ultrafast -tune zerolatency -crf 25 -pix_fmt yuv420p -an -f rtp rtp://127.0.0.1:5004?pkt_size=1200
-C:\ProgramData\chocolatey\bin\ffmpeg.exe -stats_period 10 -f dshow -i audio=Mixage stéréo (Realtek(R) Audio) -c:a libopus -application lowdelay -vbr off -compression_level 0 -frame_duration 20 -vn -f rtp rtp://127.0.0.1:5005
-2024/04/20 17:46:31 Capturing...
+2024/07/09 21:18:02 localhost
+2024/07/09 21:18:03 3000
+2024/07/09 21:18:03 TestGithub
+2024/07/09 21:18:03 Capturing...

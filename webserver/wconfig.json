@@ -1,0 +1,5 @@
+{
+    "ip_address": "localhost",
+    "web_port": "3000",
+    "sign_port": "3001"
+}

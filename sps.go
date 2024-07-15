@@ -1,37 +1,36 @@
 package main // Stream Play Server
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
-	"syscall"
-	"unsafe"
-	"time"
 	"path/filepath"
 	"strconv"
-	"bufio"
+	"strings"
+	"syscall"
+	"time"
 	"unicode/utf16"
+	"unsafe"
 )
 
 var (
-	kernel32                    = syscall.NewLazyDLL("kernel32.dll")
-	procGetStdHandle            = kernel32.NewProc("GetStdHandle")
-	procGetConsoleMode          = kernel32.NewProc("GetConsoleMode")
-	procSetConsoleMode          = kernel32.NewProc("SetConsoleMode")
+	kernel32           = syscall.NewLazyDLL("kernel32.dll")
+	procGetStdHandle   = kernel32.NewProc("GetStdHandle")
+	procGetConsoleMode = kernel32.NewProc("GetConsoleMode")
+	procSetConsoleMode = kernel32.NewProc("SetConsoleMode")
 )
 
 var (
-	moduser32        			= syscall.NewLazyDLL("user32.dll")
-	enumWindowsProc  			= moduser32.NewProc("EnumWindows")
-	getWindowTextW   			= moduser32.NewProc("GetWindowTextW")
-	isWindowVisible  			= moduser32.NewProc("IsWindowVisible")
+	moduser32       = syscall.NewLazyDLL("user32.dll")
+	enumWindowsProc = moduser32.NewProc("EnumWindows")
+	getWindowTextW  = moduser32.NewProc("GetWindowTextW")
+	isWindowVisible = moduser32.NewProc("IsWindowVisible")
 )
 
 const (
-	stdInputHandle  = uint32(-10 & 0xFFFFFFFF)
+	stdInputHandle = uint32(-10 & 0xFFFFFFFF)
 )
 
 var signCmd *exec.Cmd
@@ -39,9 +38,10 @@ var serverCmd *exec.Cmd
 var clientCmd *exec.Cmd
 
 var (
-	ipAddress    string
-	port  string
-	title string
+	ipAddress string
+	web_port  string
+	sign_port string
+	title     string
 )
 
 /**
@@ -49,12 +49,12 @@ var (
  * It reads configuration from a JSON file, launches various processes, and handles user input.
  */
 func main() {
-	args := os.Args[1:] // Exclude the first argument, which is the program name
-	
+	// args := os.Args[1:] // Exclude the first argument, which is the program name
+
 	jsonFile := "config.json"
 
 	// Read the JSON file
-	jsonBytes, err := ioutil.ReadFile(jsonFile)
+	jsonBytes, err := os.ReadFile(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,22 +63,25 @@ func main() {
 	jsonStr := string(jsonBytes)
 
 	ipAddress = extractFieldValue(jsonStr, `"ip_address"`)
-	port = extractFieldValue(jsonStr, `"port"`)
-	if len(args) > 0 && args[0] == "-ui" {
-		title = ""
-	} else {
-		title = extractFieldValue(jsonStr, `"window_name"`)
-	}
+	web_port = extractFieldValue(jsonStr, `"web_port"`)
+	sign_port = extractFieldValue(jsonStr, `"sign_port"`)
+	title := ""
+	// if len(args) > 0 && args[0] == "-ui" {
+	// 	title = ""
+	// } else {
+	// 	title = extractFieldValue(jsonStr, `"window_name"`)
+	// }
 
-	if title == "" {
-		title = setTitleManually()
-		if title == "" {
-			panic(0)
-		}
-	}
+	// if title == "" {
+	// 	title = setTitleManually()
+	// 	if title == "" {
+	// 		panic(0)
+	// 	}
+	// }
 
 	fmt.Println(ipAddress)
-	fmt.Println(port)
+	fmt.Println(web_port)
+	fmt.Println(sign_port)
 	fmt.Println(title)
 
 	// Get the current working directory
@@ -88,7 +91,7 @@ func main() {
 	}
 
 	// Add Config json file to the webserver
-	configWebserverPath := filepath.Join(workingDir, "webserver/client/wconfig.json")
+	configWebserverPath := filepath.Join(workingDir, "webserver/wconfig.json")
 
 	// Create the destination file
 	configWebserverFile, err := os.Create(configWebserverPath)
@@ -105,12 +108,10 @@ func main() {
 
 	log.Println("Config File copied successfully!")
 
-
 	// Set the folder to be appended to the working directory
 	folderSign := "signaling"
-	folderServer := "media-server"
+	// folderServer := "media-server"
 	folderWeb := "webserver"
-
 
 	////////////////////////////
 	// Start signaling server //
@@ -124,7 +125,7 @@ func main() {
 		"go",
 		[]string{
 			"run", ".",
-			ipAddress, port,
+			ipAddress, sign_port,
 		},
 		"logs/sign.log",
 		folderSignPath,
@@ -142,27 +143,27 @@ func main() {
 	// Start WebRTC server //
 	/////////////////////////
 
-	// Append the folder to the working directory
-	folderServerPath := filepath.Join(workingDir, folderServer)
+	// // Append the folder to the working directory
+	// folderServerPath := filepath.Join(workingDir, folderServer)
 
-	// Start signalling server process to generate raw video frames
-	serverCmd, err = launchCommand(
-		"go",
-		[]string{
-			"run", ".",
-			ipAddress, port, title,
-		},
-		"logs/server.log",
-		folderServerPath,
-	)
-	if err != nil {
-		panic(err)
-	}
+	// // Start signalling server process to generate raw video frames
+	// serverCmd, err = launchCommand(
+	// 	"go",
+	// 	[]string{
+	// 		"run", ".",
+	// 		ipAddress, port, title,
+	// 	},
+	// 	"logs/server.log",
+	// 	folderServerPath,
+	// )
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Use a defer statement to ensure the command process is killed when the main function exits
-	defer func() {
-		stopProcess(serverCmd)
-	}()
+	// // Use a defer statement to ensure the command process is killed when the main function exits
+	// defer func() {
+	// 	stopProcess(serverCmd)
+	// }()
 
 	/////////////////////
 	// Start WebServer //
@@ -176,7 +177,7 @@ func main() {
 		"go",
 		[]string{
 			"run", ".",
-			ipAddress, port,
+			ipAddress, web_port,
 		},
 		"logs/client.log",
 		folderWebPath,
@@ -207,13 +208,13 @@ func main() {
 				}
 			}
 
-			if serverCmd != nil {
-				if serverCmd.ProcessState != nil && serverCmd.ProcessState.Exited() {
-					status += " server: off "
-				} else {
-					status += " server: on "
-				}
-			}
+			// if serverCmd != nil {
+			// 	if serverCmd.ProcessState != nil && serverCmd.ProcessState.Exited() {
+			// 		status += " server: off "
+			// 	} else {
+			// 		status += " server: on "
+			// 	}
+			// }
 
 			if clientCmd != nil {
 				if clientCmd.ProcessState != nil && clientCmd.ProcessState.Exited() {
@@ -225,7 +226,7 @@ func main() {
 
 			fmt.Println(status)
 		}
-	}();
+	}()
 
 	// Set the terminal to raw mode to capture keypresses immediately
 	setRawMode()
@@ -250,7 +251,7 @@ func main() {
 		case "stop":
 			stopProcess(signCmd)
 			stopProcess(clientCmd)
-			stopProcess(serverCmd)
+			// stopProcess(serverCmd)
 
 		case "sign":
 			fmt.Println("Restart sign")
@@ -260,7 +261,7 @@ func main() {
 				"go",
 				[]string{
 					"run", ".",
-					ipAddress, port,
+					ipAddress, sign_port,
 				},
 				"logs/sign.log",
 				folderSignPath,
@@ -277,7 +278,7 @@ func main() {
 				"go",
 				[]string{
 					"run", ".",
-					ipAddress, port,
+					ipAddress, web_port,
 				},
 				"logs/client.log",
 				folderWebPath,
@@ -286,44 +287,44 @@ func main() {
 				panic(err)
 			}
 
-		case "server":
-			fmt.Println("Restart server")
-			stopProcess(serverCmd)
+		// case "server":
+		// 	fmt.Println("Restart server")
+		// 	stopProcess(serverCmd)
 
-			serverCmd, err = launchCommand(
-				"go",
-				[]string{
-					"run", ".",
-					ipAddress, port, title,
-				},
-				"logs/server.log",
-				folderServerPath,
-			)
-			if err != nil {
-				panic(err)
-			}
+		// 	serverCmd, err = launchCommand(
+		// 		"go",
+		// 		[]string{
+		// 			"run", ".",
+		// 			ipAddress, port, title,
+		// 		},
+		// 		"logs/server.log",
+		// 		folderServerPath,
+		// 	)
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
 
-		case "change":
-			title = setTitleManually()
-			if title == "" {
-				continue
-			}
+		// case "change":
+		// 	title = setTitleManually()
+		// 	if title == "" {
+		// 		continue
+		// 	}
 
-			fmt.Println("Restart server")
-			stopProcess(serverCmd)
+		// 	fmt.Println("Restart server")
+		// 	stopProcess(serverCmd)
 
-			serverCmd, err = launchCommand(
-				"go",
-				[]string{
-					"run", ".",
-					ipAddress, port, title,
-				},
-				"logs/server.log",
-				folderServerPath,
-			)
-			if err != nil {
-				panic(err)
-			}
+		// 	serverCmd, err = launchCommand(
+		// 		"go",
+		// 		[]string{
+		// 			"run", ".",
+		// 			ipAddress, port, title,
+		// 		},
+		// 		"logs/server.log",
+		// 		folderServerPath,
+		// 	)
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
 
 		default:
 			// Handle the case when an invalid command is provided.
@@ -391,7 +392,7 @@ func getCurrentDirectory() string {
  * @return A pointer to the Cmd struct representing the running command and an error (if any).
  *         If there is an error while starting the command, the returned pointer will be nil, and the error will be non-nil.
  */
- func launchCommand(command string, args []string, filePath string, workingDir string) (*exec.Cmd, error) {
+func launchCommand(command string, args []string, filePath string, workingDir string) (*exec.Cmd, error) {
 	cmd := exec.Command(command, args...)
 	fmt.Println(cmd)
 
@@ -466,9 +467,9 @@ func stopProcess(cmd *exec.Cmd) {
  * @param execString The executable string used to identify the window.
  * @return The window title as a string if found, or an error if the title is not found.
  */
- func findWindowTitle(execString string) (string, error) {
+func findWindowTitle(execString string) (string, error) {
 	// Run the tasklist command to get the window titles
-	tasklistCmd := exec.Command("cmd.exe", "/C", "tasklist", "/v", "/fi", "imagename eq " + execString, "/fo", "list", "|", "findstr", "Titre")
+	tasklistCmd := exec.Command("cmd.exe", "/C", "tasklist", "/v", "/fi", "imagename eq "+execString, "/fo", "list", "|", "findstr", "Titre")
 	output, err := tasklistCmd.Output()
 	if err != nil {
 		return "", err
@@ -519,7 +520,7 @@ func getWindowTitles() []string {
  *
  * @return The selected window title as a string. If the index is invalid, it returns an empty string.
  */
-func setTitleManually() string { 
+func setTitleManually() string {
 	titles := getWindowTitles()
 	fmt.Println("[Window Titles (visible)]")
 	for i, t := range titles {

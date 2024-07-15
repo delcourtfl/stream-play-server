@@ -1,7 +1,18 @@
-2024/04/20 17:46:29 localhost
-2024/04/20 17:46:29 3000
-2024/04/20 17:46:40 Client request: GET /
-2024/04/20 17:46:40 Client request: GET /capture.js
-2024/04/20 17:46:40 Client request: GET /wconfig.json
-2024/04/20 17:46:40 Client request: GET /favicon.ico
-2024/04/20 17:47:31 Client request: GET /gamepad.svg
+2024/07/15 22:30:23 localhost
+2024/07/15 22:30:24 3000
+2024/07/15 22:30:24 Server listening on localhost:3000
+2024/07/15 22:31:03 Client request: GET /
+2024/07/15 22:31:04 Client request: GET /styles.css
+2024/07/15 22:31:04 Client request: GET /main.js
+2024/07/15 22:31:04 Client request: GET /js/webrtc.js
+2024/07/15 22:31:04 Client request: GET /js/inputs.js
+2024/07/15 22:31:04 Client request: GET /wconfig.json
+2024/07/15 22:31:05 Client request: GET /favicon.ico
+2024/07/15 22:31:20 Client request: GET /js/webrtc.js
+2024/07/15 22:31:20 Client request: GET /wconfig.json
+2024/07/15 22:31:32 Client request: GET /js/webrtc.js
+2024/07/15 22:31:32 Client request: GET /wconfig.json
+2024/07/15 22:32:06 Client request: GET /
+2024/07/15 22:32:06 Client request: GET /main.js
+2024/07/15 22:32:06 Client request: GET /js/webrtc.js
+2024/07/15 22:32:06 Client request: GET /wconfig.json
