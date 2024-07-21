@@ -7,7 +7,6 @@
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Game')" id="default">Game</button>
             <button class="tablinks" onclick="openTab(event, 'Controllers')">Controllers</button>
-            <!-- <button class="tablinks" onclick="openTab(event, 'Connection')">Connection</button> -->
             <button class="tablinks" onclick="openTab(event, 'Capture')">Capture</button>
         </div>
         
@@ -82,20 +81,13 @@
                 </table>
             </div>
         </div>
-        
-        <!-- <div id="Connection" class="tabcontent">
-            <button id="connectPC"> Connect </button>
-            <button id="retryFFMPEG"> DisplayRetry </button>
-            <button id="testAudio"> Audio : false </button>
-            <button id="testVideo"> Video : true </button> 
-            <div id="logContainer" class="chat-window">
-                <div class="chat-message">Browser : Hello there!</div>
-            </div>
-        </div> -->
 
         <div id="Capture" class="tabcontent">
             <button id="startButton"> Start Capture </button>
             <button id="callButton"> Join Call </button>
+            <button id="hangupButton"> Stop Call </button>
+            <button id="recordVideo"> Video : true </button>
+            <button id="recordAudio"> Audio : true </button>
             <video id="localVideo" controls autoplay muted playsinline></video>
         </div>
     

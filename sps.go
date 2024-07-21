@@ -11,7 +11,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"unicode/utf16"
 	"unsafe"
 )
 
@@ -20,13 +19,6 @@ var (
 	procGetStdHandle   = kernel32.NewProc("GetStdHandle")
 	procGetConsoleMode = kernel32.NewProc("GetConsoleMode")
 	procSetConsoleMode = kernel32.NewProc("SetConsoleMode")
-)
-
-var (
-	moduser32       = syscall.NewLazyDLL("user32.dll")
-	enumWindowsProc = moduser32.NewProc("EnumWindows")
-	getWindowTextW  = moduser32.NewProc("GetWindowTextW")
-	isWindowVisible = moduser32.NewProc("IsWindowVisible")
 )
 
 const (
@@ -38,10 +30,10 @@ var serverCmd *exec.Cmd
 var clientCmd *exec.Cmd
 
 var (
-	ipAddress string
-	web_port  string
-	sign_port string
-	title     string
+	ipAddress  string
+	web_port   string
+	sign_port  string
+	input_port string
 )
 
 /**
@@ -65,24 +57,11 @@ func main() {
 	ipAddress = extractFieldValue(jsonStr, `"ip_address"`)
 	web_port = extractFieldValue(jsonStr, `"web_port"`)
 	sign_port = extractFieldValue(jsonStr, `"sign_port"`)
-	title := ""
-	// if len(args) > 0 && args[0] == "-ui" {
-	// 	title = ""
-	// } else {
-	// 	title = extractFieldValue(jsonStr, `"window_name"`)
-	// }
+	input_port = extractFieldValue(jsonStr, `"input_port"`)
 
-	// if title == "" {
-	// 	title = setTitleManually()
-	// 	if title == "" {
-	// 		panic(0)
-	// 	}
-	// }
-
-	fmt.Println(ipAddress)
-	fmt.Println(web_port)
-	fmt.Println(sign_port)
-	fmt.Println(title)
+	fmt.Println(ipAddress + ":" + web_port)
+	fmt.Println(ipAddress + ":" + sign_port)
+	fmt.Println("localhost:" + input_port)
 
 	// Get the current working directory
 	workingDir, err := os.Getwd()
@@ -110,7 +89,7 @@ func main() {
 
 	// Set the folder to be appended to the working directory
 	folderSign := "signaling"
-	// folderServer := "media-server"
+	folderServer := "media-server"
 	folderWeb := "webserver"
 
 	////////////////////////////
@@ -143,27 +122,27 @@ func main() {
 	// Start WebRTC server //
 	/////////////////////////
 
-	// // Append the folder to the working directory
-	// folderServerPath := filepath.Join(workingDir, folderServer)
+	// Append the folder to the working directory
+	folderServerPath := filepath.Join(workingDir, folderServer)
 
-	// // Start signalling server process to generate raw video frames
-	// serverCmd, err = launchCommand(
-	// 	"go",
-	// 	[]string{
-	// 		"run", ".",
-	// 		ipAddress, port, title,
-	// 	},
-	// 	"logs/server.log",
-	// 	folderServerPath,
-	// )
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// Start signalling server process to generate raw video frames
+	serverCmd, err = launchCommand(
+		"go",
+		[]string{
+			"run", ".",
+			input_port,
+		},
+		"logs/server.log",
+		folderServerPath,
+	)
+	if err != nil {
+		panic(err)
+	}
 
-	// // Use a defer statement to ensure the command process is killed when the main function exits
-	// defer func() {
-	// 	stopProcess(serverCmd)
-	// }()
+	// Use a defer statement to ensure the command process is killed when the main function exits
+	defer func() {
+		stopProcess(serverCmd)
+	}()
 
 	/////////////////////
 	// Start WebServer //
@@ -208,13 +187,13 @@ func main() {
 				}
 			}
 
-			// if serverCmd != nil {
-			// 	if serverCmd.ProcessState != nil && serverCmd.ProcessState.Exited() {
-			// 		status += " server: off "
-			// 	} else {
-			// 		status += " server: on "
-			// 	}
-			// }
+			if serverCmd != nil {
+				if serverCmd.ProcessState != nil && serverCmd.ProcessState.Exited() {
+					status += " server: off "
+				} else {
+					status += " server: on "
+				}
+			}
 
 			if clientCmd != nil {
 				if clientCmd.ProcessState != nil && clientCmd.ProcessState.Exited() {
@@ -251,7 +230,7 @@ func main() {
 		case "stop":
 			stopProcess(signCmd)
 			stopProcess(clientCmd)
-			// stopProcess(serverCmd)
+			stopProcess(serverCmd)
 
 		case "sign":
 			fmt.Println("Restart sign")
@@ -287,44 +266,22 @@ func main() {
 				panic(err)
 			}
 
-		// case "server":
-		// 	fmt.Println("Restart server")
-		// 	stopProcess(serverCmd)
+		case "server":
+			fmt.Println("Restart server")
+			stopProcess(serverCmd)
 
-		// 	serverCmd, err = launchCommand(
-		// 		"go",
-		// 		[]string{
-		// 			"run", ".",
-		// 			ipAddress, port, title,
-		// 		},
-		// 		"logs/server.log",
-		// 		folderServerPath,
-		// 	)
-		// 	if err != nil {
-		// 		panic(err)
-		// 	}
-
-		// case "change":
-		// 	title = setTitleManually()
-		// 	if title == "" {
-		// 		continue
-		// 	}
-
-		// 	fmt.Println("Restart server")
-		// 	stopProcess(serverCmd)
-
-		// 	serverCmd, err = launchCommand(
-		// 		"go",
-		// 		[]string{
-		// 			"run", ".",
-		// 			ipAddress, port, title,
-		// 		},
-		// 		"logs/server.log",
-		// 		folderServerPath,
-		// 	)
-		// 	if err != nil {
-		// 		panic(err)
-		// 	}
+			serverCmd, err = launchCommand(
+				"go",
+				[]string{
+					"run", ".",
+					input_port,
+				},
+				"logs/server.log",
+				folderServerPath,
+			)
+			if err != nil {
+				panic(err)
+			}
 
 		default:
 			// Handle the case when an invalid command is provided.
@@ -367,19 +324,6 @@ func setRawMode() {
 	mode &^= 0x0004 // Disable ECHO
 
 	_, _, _ = procSetConsoleMode.Call(stdinHandle, uintptr(mode))
-}
-
-/**
- * getCurrentDirectory returns the current directory.
- *
- * @return The current directory as a string.
- */
-func getCurrentDirectory() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return dir
 }
 
 /**
@@ -459,86 +403,4 @@ func stopProcess(cmd *exec.Cmd) {
 		}
 	}
 	fmt.Println("Should not happen...")
-}
-
-/**
- * findWindowTitle retrieves the window title of a given executable string.
- *
- * @param execString The executable string used to identify the window.
- * @return The window title as a string if found, or an error if the title is not found.
- */
-func findWindowTitle(execString string) (string, error) {
-	// Run the tasklist command to get the window titles
-	tasklistCmd := exec.Command("cmd.exe", "/C", "tasklist", "/v", "/fi", "imagename eq "+execString, "/fo", "list", "|", "findstr", "Titre")
-	output, err := tasklistCmd.Output()
-	if err != nil {
-		return "", err
-	}
-	// Convert bytes to string
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		// Split the windowString using ":" as the delimiter
-		parts := strings.Split(line, ": ")
-		if len(parts) > 1 && len(parts[1]) > 0 {
-			//  Need to remove useless byte at the end : [13] => (carriage return)
-			return parts[1][:len(parts[1])-1], nil
-		}
-	}
-
-	return "", fmt.Errorf("window title not found")
-}
-
-/**
- * getWindowTitles retrieves a list of visible window titles.
- *
- * @return A slice of strings representing the visible window titles.
- */
-func getWindowTitles() []string {
-	var titles []string
-
-	enumWindowsProc.Call(syscall.NewCallback(func(hwnd syscall.Handle, lParam uintptr) uintptr {
-		var buf [256]uint16
-		if _, _, err := getWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf))); err.(syscall.Errno) == 0 {
-			length := 0
-			for buf[length] != 0 {
-				length++
-			}
-			title := string(utf16.Decode(buf[:length]))
-			visible, _, _ := isWindowVisible.Call(uintptr(hwnd))
-			if visible != 0 && len(title) > 0 {
-				titles = append(titles, title)
-			}
-		}
-		return 1 // Continue enumeration
-	}), 0)
-
-	return titles
-}
-
-/**
- * setTitleManually interactively prompts the user to manually select a window title.
- *
- * @return The selected window title as a string. If the index is invalid, it returns an empty string.
- */
-func setTitleManually() string {
-	titles := getWindowTitles()
-	fmt.Println("[Window Titles (visible)]")
-	for i, t := range titles {
-		fmt.Printf("%d: %s\n", i, t)
-	}
-
-	// Wait for index input after the loop
-	var index int
-	index = -1
-	fmt.Print("Enter the index of the window you want to select: ")
-	fmt.Scanln(&index)
-
-	// Perform further operations based on the selected index
-	if index >= 0 && index < len(titles) {
-		fmt.Println("You selected window title:", titles[index])
-		return titles[index]
-	} else {
-		fmt.Println("Invalid index. Please enter a valid index.")
-		return ""
-	}
 }

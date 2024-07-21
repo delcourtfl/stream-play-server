@@ -5,6 +5,33 @@ var gamepadBtns = [];
 var gamepadAnlgs = [];
 var SvgLoadedCnt = 0;
 
+var dataChannel = null;
+
+// Flag to control the loop
+let isPaused = true;
+
+var currentMappingButtons = [{}, {}, {}, {}]
+// format = 0: [true, 1]
+
+var currentMappingAxes = [{}, {}, {}, {}]
+// format = 0: [true, 1]
+
+export function setInputChannel(channel) {
+    if (!channel) {
+        console.log("No proper data channel was provided");
+    } else {
+        dataChannel = channel;
+    }
+}
+
+export function send(data) {
+    if (dataChannel) {
+        dataChannel.send(JSON.stringify(data));
+    } else {
+        console.log("No datachannel given");
+    }
+}
+
 async function loadSvgObjects() {
     const svgPromises = [];
     for (let i = 0; i < 4; i++) {
@@ -71,11 +98,8 @@ loadSvgObjects().then(() => {
         console.log("Gamepad API is not supported");
     }
 
-    resumeGamepadInput();
+    initGamepadInput();
 });
-
-// Flag to control the loop
-let isPaused = true;
 
 // Event handler when a gamepad is connected
 function onGamepadConnected(event) {
@@ -177,7 +201,7 @@ function onGamepadDisconnected(event) {
     gamepadSvgArr[gamepad.index].setAttribute('style', 'filter: contrast(30%);');
 }
 
-export function initGamepadInput(signalingSocket) {
+export function initGamepadInput() {
     console.log("INIT GAMEPAD INPUT");
 
     // Set the bit at the specified index (buttonIndex)
@@ -195,6 +219,7 @@ export function initGamepadInput(signalingSocket) {
     function updateGamepadInput() {
         if (isPaused) {
             // Exit the function if it's paused
+            // console.log("Stop input recording")
             return;
         }
         // Get the list of connected gamepads
@@ -268,23 +293,23 @@ export function initGamepadInput(signalingSocket) {
 
                 if (moved[i]) {
                     console.log("Input:", bitArray[i].toString(2), stickValues);
-                    if (signalingSocket.readyState === WebSocket.OPEN) {
-                        send({
-                            type: "GAMEPAD",
-                            data: JSON.stringify({
-                                wButtons: bitArray[i],
-                                bLeftTrigger: stickValues[i][3] * 255 | 0,
-                                bRightTrigger: stickValues[i][4] * 255 | 0,
-                                sThumbLX: stickValues[i][0] * 32767 | 0,
-                                sThumbLY: stickValues[i][1] * -32767 | 0,
-                                sThumbRX: stickValues[i][2] * 32767 | 0,
-                                sThumbRY: stickValues[i][5] * -32767 | 0,
-                            }),
-                            option: i,
-                        });
-                    } else {
-                        console.log("WebSocket is not open. Data not sent.");
-                    }
+                    // if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+                    send({
+                        type: "GAMEPAD",
+                        data: JSON.stringify({
+                            wButtons: bitArray[i],
+                            bLeftTrigger: stickValues[i][3] * 255 | 0,
+                            bRightTrigger: stickValues[i][4] * 255 | 0,
+                            sThumbLX: stickValues[i][0] * 32767 | 0,
+                            sThumbLY: stickValues[i][1] * -32767 | 0,
+                            sThumbRX: stickValues[i][2] * 32767 | 0,
+                            sThumbRY: stickValues[i][5] * -32767 | 0,
+                        }),
+                        option: i,
+                    });
+                    // } else {
+                    //     console.log("WebSocket is not open. Data not sent.");
+                    // }
                 }
             }
         }
@@ -346,6 +371,7 @@ export function pauseGamepadInput() {
 
 // Function to resume the gamepad input
 export function resumeGamepadInput() {
+    // isPaused = false;
     if (isPaused) {
         isPaused = false;
         initGamepadInput(); // Start/resume the loop
@@ -375,12 +401,6 @@ const defaultXboxController = [
     { name: "RightThumbstick (X-Axis)", value: 2, isAnalog: true },
     { name: "RightThumbstick (Y-Axis)", value: 5, isAnalog: true }
 ];
-  
-var currentMappingButtons = [{}, {}, {}, {}]
-// format = 0: [true, 1]
-
-var currentMappingAxes = [{}, {}, {}, {}]
-// format = 0: [true, 1]
 
 export async function createGamepadMapping() {
 

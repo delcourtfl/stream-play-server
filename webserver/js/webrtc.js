@@ -4,9 +4,13 @@ let streamIn = null;
 let streamOut = null;
 
 // export let peerConnection = null;
-export let peerConnections = {};
-export let dataChannel = null;
-export let signalingSocket = null;
+let peerConnections = {};
+// let dataChannel = null;
+let signalingSocket = null;
+let localSocket = null;
+
+let getAudio = true;
+let getVideo = true;
 
 function uuidv4() {
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
@@ -17,27 +21,54 @@ function uuidv4() {
 export let localPeerId = uuidv4();
 console.log(localPeerId);
 
+export function getDataChannel() {
+    console.log(peerConnections);
+    for (const peerId in peerConnections) {
+        const peerConnection = peerConnections[peerId];
+        const channel = peerConnection.dataChannel;
+        if (channel) {
+            return channel;
+        }
+    }
+    console.log("No data channel found");
+    return null;
+}
+
 const processMsg = (msg) => {
     const peerId = msg.peerId;
 
     switch (msg.type) {
         case 'offer':
             console.log('Received offer');
-            handleOffer(peerId, msg);
+            if (streamOut) {
+                handleOffer(peerId, msg);
+            }
             break;
         case 'answer':
             console.log("Received answer");
-            handleAnswer(peerId, msg);
+            if (peerId === localPeerId || !peerConnections[peerId]) {
+                console.log('Wrong anwser, ignoring : ', peerId);
+            } 
+            // else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.signalingState === 'stable') {
+            //     console.log('No need for answer, ignoring : ', peerId);
+            // }
+            else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.currentRemoteDescriptiob) {
+                console.log('No need for answer, ignoring : ', peerId);
+            } else {
+                handleAnswer(peerId, msg);
+            }
             break;
         case 'candidate':
             console.log('Received ICE candidate');
-            handleCandidate(peerId, msg);
+            if (peerConnections[peerId]) {
+                handleCandidate(peerId, msg);
+            }
             break;
         case 'ready':
             console.log('Received Ready');
             console.log(peerConnections);
-            if (peerConnections[peerId]) {
-                console.log('Already in call, ignoring');
+            if (peerId === localPeerId || peerConnections[peerId]) {
+                console.log('Already in call, ignoring : ', peerId);
             } else {
                 makeCall(peerId);
             }
@@ -74,6 +105,7 @@ export async function connectToSignServer() {
         // Access values from the config object
         const serverIP = config.ip_address;
         const serverPort = config.sign_port;
+        const inputPort = config.input_port;
         if (signalingSocket) {
             signalingSocket.close();
             signalingSocket = null; // Clean up the reference
@@ -92,12 +124,20 @@ export async function connectToSignServer() {
             processMsg(message);
         };
 
+        if (location.hostname === 'localhost') {
+            // Is local instance
+            localSocket = new WebSocket('ws://localhost:'+inputPort+'/ws');
+            localSocket.onopen = () => {
+                console.log('Local WebSocket connection opened');
+            };
+        }
+
     } catch (error) {
         console.error('Error loading configuration:', error);
     }
 };
 
-async function createPeerConnection(peerId) {
+async function createPeerConnection(peerId, withDataChannel) {
     if (peerConnections[peerId]) {
         return;
     }
@@ -123,22 +163,52 @@ async function createPeerConnection(peerId) {
         streamIn = event.streams[0];
     };
 
-    const dataChannel = peerConnection.createDataChannel("data");
-    dataChannel.onopen = () => {
-        console.log("Data channel initiated with", peerId);
-    };
-    dataChannel.onmessage = (event) => {
-        console.log("Received message from", peerId, ":", event.data);
-    };
+    if (withDataChannel) {
 
-    peerConnections[peerId] = {
-        peerConnection,
-        dataChannel,
-    };
+        const dataChannel = peerConnection.createDataChannel("data");
+        dataChannel.onopen = () => {
+            console.log("Data channel initiated with", peerId);
+        };
+        dataChannel.onmessage = (event) => {
+            console.log("Received message from", peerId, ":", event.data);
+        };
+        peerConnections[peerId] = {
+            peerConnection,
+            dataChannel,
+        };
+    
+    } else {
+
+        peerConnections[peerId] = {
+            peerConnection,
+            dataChannel: null
+        };
+
+        peerConnection.ondatachannel = (event) => {
+            const dataChannel = event.channel;
+            console.log(dataChannel);
+        
+            dataChannel.onopen = () => {
+                console.log("Data channel initiated with", peerId);
+            };
+            dataChannel.onmessage = (event) => {
+                console.log("Received input from", peerId);
+                if (localSocket && localSocket.readyState === WebSocket.OPEN) {
+                    localSocket.send(event.data);
+                }
+            };
+
+            peerConnections[peerId] = {
+                peerConnection,
+                dataChannel,
+            };
+        };
+
+    }
 };
 
 async function handleOffer(peerId, offer) {
-    await createPeerConnection(peerId);
+    await createPeerConnection(peerId, false);
     const peerConnection = peerConnections[peerId].peerConnection;
 
     if (streamOut) {
@@ -170,6 +240,7 @@ async function handleCandidate(peerId, candidate) {
 
 async function handleAnswer(peerId, answer) {
     const peerConnection = peerConnections[peerId].peerConnection;
+    console.log(peerConnection)
     if (!peerConnection) {
         console.error('No peer connection for answer from', peerId);
         return;
@@ -227,8 +298,10 @@ export async function hangup(peerId) {
     }
 };
 
-export async function hangupCall(peerId) {
-    hangup(peerId);
+export async function hangupCall() {
+    for (const peerId in peerConnections) {
+        hangup(peerId);
+    }
     signalingSocket.send(JSON.stringify({
         type: 'bye',
         peerId: localPeerId
@@ -236,7 +309,7 @@ export async function hangupCall(peerId) {
 };
 
 export async function makeCall(peerId) {
-    await createPeerConnection(peerId);
+    await createPeerConnection(peerId, true);
     const peerConnection = peerConnections[peerId].peerConnection;
 
     if (streamOut) {
@@ -247,8 +320,8 @@ export async function makeCall(peerId) {
     }
 
     const offerOptions = {
-        offerToReceiveAudio: 1,
-        offerToReceiveVideo: 1
+        offerToReceiveAudio: getAudio ? 1 : 0,
+        offerToReceiveVideo: getVideo ? 1 : 0
     };
 
     const offer = await peerConnection.createOffer(offerOptions);
@@ -261,7 +334,7 @@ export async function makeCall(peerId) {
 };
 
 export async function startCall() {
-    const displayMediaOptions = { video: true, audio: true }; // You can customize options here
+    const displayMediaOptions = { video: getVideo, audio: getAudio };
 
     const stream = await startCapture(displayMediaOptions);
     if (stream) {
@@ -288,9 +361,29 @@ export async function joinCall() {
 
 async function startCapture(displayMediaOptions) {
     try {
+        if (!navigator.mediaDevices) {
+            console.log("Current instance cannot record media");
+            return null
+        }
         return await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
     } catch (err) {
         console.error(err);
         return null;
     }
 };
+
+//////////////////////////////////////////////
+
+// Record option Audio / Video
+
+export function toggleAudio () {
+    getAudio = !getAudio;
+    document.getElementById("recordAudio").innerText = "Audio : " + getAudio;
+    console.log("Audio : " + getAudio);
+}
+
+export function toggleVideo () {
+    getVideo = !getVideo;
+    document.getElementById("recordVideo").innerText = "Video : " + getVideo;
+    console.log("Video : " + getVideo);
+}
