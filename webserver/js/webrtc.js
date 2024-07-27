@@ -3,9 +3,7 @@
 let streamIn = null;
 let streamOut = null;
 
-// export let peerConnection = null;
 let peerConnections = {};
-// let dataChannel = null;
 let signalingSocket = null;
 let localSocket = null;
 
@@ -48,11 +46,7 @@ const processMsg = (msg) => {
             console.log("Received answer");
             if (peerId === localPeerId || !peerConnections[peerId]) {
                 console.log('Wrong anwser, ignoring : ', peerId);
-            } 
-            // else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.signalingState === 'stable') {
-            //     console.log('No need for answer, ignoring : ', peerId);
-            // }
-            else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.currentRemoteDescriptiob) {
+            } else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.currentRemoteDescriptiob) {
                 console.log('No need for answer, ignoring : ', peerId);
             } else {
                 handleAnswer(peerId, msg);
@@ -158,7 +152,7 @@ async function createPeerConnection(peerId, withDataChannel) {
         console.log("Got something from", peerId);
         console.log("New track: " + event.track.kind);
         console.log(event.streams);
-        const videoElement = document.getElementById('remoteVideo');
+        const videoElement = document.getElementById('streamVideo');
         videoElement.srcObject = event.streams[0];
         streamIn = event.streams[0];
     };
@@ -339,7 +333,7 @@ export async function startCall() {
     const stream = await startCapture(displayMediaOptions);
     if (stream) {
         console.log(stream);
-        const videoElement = document.getElementById('localVideo');
+        const videoElement = document.getElementById('streamVideo');
         videoElement.srcObject = stream;
         streamOut = stream;
 
@@ -378,12 +372,14 @@ async function startCapture(displayMediaOptions) {
 
 export function toggleAudio () {
     getAudio = !getAudio;
-    document.getElementById("recordAudio").innerText = "Audio : " + getAudio;
-    console.log("Audio : " + getAudio);
+    const audioButton = document.getElementById("recordAudio");
+    audioButton.innerText = "Audio : " + (getAudio ? 'On' : 'Off');
+    console.log("Audio : " + (getAudio? 'On' : 'Off'));
 }
 
 export function toggleVideo () {
     getVideo = !getVideo;
-    document.getElementById("recordVideo").innerText = "Video : " + getVideo;
-    console.log("Video : " + getVideo);
+    const videoButton = document.getElementById("recordVideo");
+    videoButton.innerText = "Video : " + (getVideo ? 'On' : 'Off');
+    console.log("Video : " + (getVideo? 'On' : 'Off'));
 }

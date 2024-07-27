@@ -32,14 +32,16 @@ export function send(data) {
     }
 }
 
-async function loadSvgObjects() {
-    const svgPromises = [];
+export async function loadSvgObjects() {
+    // const svgPromises = [];
+
     for (let i = 0; i < 4; i++) {
         const obj = document.getElementById("svg-object"+i);
         obj.setAttribute('style', 'filter: contrast(30%);');
 
-        const svgPromise = new Promise((resolve) => {
+        // const svgPromise = new Promise((resolve) => {
             obj.addEventListener("load", function() {
+                console.log("Loaded")
                 const outerSVGDocument = obj.contentDocument;
                 console.log(outerSVGDocument);
     
@@ -69,40 +71,27 @@ async function loadSvgObjects() {
                 gamepadAnlgs[i] = anlgsArr;
     
                 SvgLoadedCnt++;
-                resolve(); // Resolve the promise when this SVG object is loaded
+                // resolve(); // Resolve the promise when this SVG object is loaded
             });
     
             // Now that the load event listener is attached, set the data attribute to trigger loading
             obj.setAttribute('data', 'gamepad.svg');
-        });
+        // });
     
-        svgPromises.push(svgPromise);
+        // svgPromises.push(svgPromise);
 
         // Access the contentDocument of the outer <object> (this is the outer SVG document)   
         gamepadSvgArr[i] = obj;
     }
 
-    await Promise.all(svgPromises);
+    // await Promise.all(svgPromises);
+
+    // console.log("All SVG objects are loaded and processed.");
+    // console.log(gamepadBtns);
 }
 
-loadSvgObjects().then(() => {
-    console.log("All SVG objects are loaded and processed.");
-    console.log(gamepadBtns);
-    
-    // Check if the browser supports the Gamepad API
-    if ("getGamepads" in navigator) {
-        // Start listening for gamepad events
-        window.addEventListener("gamepadconnected", onGamepadConnected);
-        window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
-    } else {
-        console.log("Gamepad API is not supported");
-    }
-
-    initGamepadInput();
-});
-
 // Event handler when a gamepad is connected
-function onGamepadConnected(event) {
+export function onGamepadConnected(event) {
     const gamepad = event.gamepad;
     const gamepadIndex = gamepad.index;
     const gamepadName = gamepad.id.toString();
@@ -195,7 +184,7 @@ function onGamepadConnected(event) {
 }
 
 // Event handler when a gamepad is disconnected
-function onGamepadDisconnected(event) {
+export function onGamepadDisconnected(event) {
     const gamepad = event.gamepad;
     console.log("Gamepad disconnected:" + gamepad.id + " : " + gamepad.index);
     gamepadSvgArr[gamepad.index].setAttribute('style', 'filter: contrast(30%);');
@@ -293,7 +282,7 @@ export function initGamepadInput() {
 
                 if (moved[i]) {
                     console.log("Input:", bitArray[i].toString(2), stickValues);
-                    // if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+
                     send({
                         type: "GAMEPAD",
                         data: JSON.stringify({
@@ -307,9 +296,7 @@ export function initGamepadInput() {
                         }),
                         option: i,
                     });
-                    // } else {
-                    //     console.log("WebSocket is not open. Data not sent.");
-                    // }
+
                 }
             }
         }

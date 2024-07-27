@@ -4,14 +4,35 @@
         <link rel="stylesheet" type="text/css" href="styles.css">
     </head>
     <body>
+
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Game')" id="default">Game</button>
+            <button class="tablinks" onclick="openTab(event, 'Selection')" id="default">Selection</button>
+            <button class="tablinks" onclick="openTab(event, 'Game')">Game</button>
             <button class="tablinks" onclick="openTab(event, 'Controllers')">Controllers</button>
-            <button class="tablinks" onclick="openTab(event, 'Capture')">Capture</button>
+        </div>
+
+        <div class="menu hidden">
+            <button id="hangupButton"> Stop Call </button>
+            <button class="tablinks" onclick="openTab(event, 'Controllers')"> Controllers </button>
         </div>
         
+        <div id="Selection" class="tabcontent">
+            <div class="banner">
+                <img src="logoSPS.svg" alt="Logo">
+                <span> Stream Play Server </span>
+            </div>
+            <div class="small-buttons">
+                <button id="recordVideo" class="small-button"> Video : On </button>
+                <button id="recordAudio" class="small-button"> Audio : On </button>
+            </div>
+            <div class="big-buttons">
+                <button id="hostButton" class="big-button"> Host </button>
+                <button id="joinButton" class="big-button"> Join </button>
+            </div>
+        </div>
+
         <div id="Game" class="tabcontent">
-            <video id="remoteVideo" controls autoplay muted playsinline></video>
+            <video id="streamVideo" controls autoplay muted playsinline></video>
         </div>
 
         <div id="Controllers" class="tabcontent">
@@ -24,8 +45,6 @@
                 <tr>
                     <th>Controller 0</th>
                     <th>Controller 1</th>
-                    <th>Controller 2</th>
-                    <th>Controller 3</th>
                 </tr>
                 <tr>
                     <td>
@@ -34,6 +53,14 @@
                     <td>
                         <object id="svg-object1" type="image/svg+xml"></object>
                     </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Controller 2</th>
+                    <th>Controller 3</th>
+                </tr>
+                <tr>
                     <td>
                         <object id="svg-object2" type="image/svg+xml"></object>
                     </td>
@@ -81,15 +108,6 @@
                 </table>
             </div>
         </div>
-
-        <div id="Capture" class="tabcontent">
-            <button id="startButton"> Start Capture </button>
-            <button id="callButton"> Join Call </button>
-            <button id="hangupButton"> Stop Call </button>
-            <button id="recordVideo"> Video : true </button>
-            <button id="recordAudio"> Audio : true </button>
-            <video id="localVideo" controls autoplay muted playsinline></video>
-        </div>
     
         <script>
 
@@ -107,9 +125,6 @@
             evt.currentTarget.className += " active";
         }
         document.getElementById("default").click();
-
-        // Get a reference to the log container
-        const logContainer = document.getElementById('logContainer');
 
         </script>
         <script type="module" src="main.js"></script>

@@ -47,6 +47,12 @@ func main() {
 	// Handle requests for static files for the client page
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Client request: %s %s\n", r.Method, r.URL.Path)
+
+		// Set headers to prevent caching
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+
 		http.FileServer(http.Dir("./")).ServeHTTP(w, r)
 	}))
 
