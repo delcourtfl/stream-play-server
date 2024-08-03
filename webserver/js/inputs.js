@@ -5,10 +5,12 @@ var gamepadBtns = [];
 var gamepadAnlgs = [];
 var SvgLoadedCnt = 0;
 
+const gamepadRealIndex = {}
+
 var dataChannel = null;
 
 // Flag to control the loop
-let isPaused = true;
+let isPaused = false;
 
 var currentMappingButtons = [{}, {}, {}, {}]
 // format = 0: [true, 1]
@@ -33,13 +35,13 @@ export function send(data) {
 }
 
 export async function loadSvgObjects() {
-    // const svgPromises = [];
+    const svgPromises = [];
 
     for (let i = 0; i < 4; i++) {
         const obj = document.getElementById("svg-object"+i);
         obj.setAttribute('style', 'filter: contrast(30%);');
 
-        // const svgPromise = new Promise((resolve) => {
+        const svgPromise = new Promise((resolve) => {
             obj.addEventListener("load", function() {
                 console.log("Loaded")
                 const outerSVGDocument = obj.contentDocument;
@@ -71,22 +73,22 @@ export async function loadSvgObjects() {
                 gamepadAnlgs[i] = anlgsArr;
     
                 SvgLoadedCnt++;
-                // resolve(); // Resolve the promise when this SVG object is loaded
+                resolve(); // Resolve the promise when this SVG object is loaded
             });
     
             // Now that the load event listener is attached, set the data attribute to trigger loading
             obj.setAttribute('data', 'gamepad.svg');
-        // });
+        });
     
-        // svgPromises.push(svgPromise);
+        svgPromises.push(svgPromise);
 
         // Access the contentDocument of the outer <object> (this is the outer SVG document)   
         gamepadSvgArr[i] = obj;
     }
 
-    // await Promise.all(svgPromises);
+    await Promise.all(svgPromises);
 
-    // console.log("All SVG objects are loaded and processed.");
+    console.log("All SVG objects are loaded and processed.");
     // console.log(gamepadBtns);
 }
 
@@ -162,6 +164,14 @@ export function onGamepadConnected(event) {
     console.log(currentMappingButtons[gamepadIndex]);
     console.log(currentMappingAxes[gamepadIndex]);
 
+    populateTable(gamepadIndex);
+
+    gamepadRealIndex[gamepadIndex] = gamepadIndex;
+    addGamepad(gamepadIndex);
+    
+}
+
+export function showDefaultMapping() {
     const table = document.getElementById("defaultcontroller");
 
     while (table.rows.length > 0) {
@@ -178,20 +188,18 @@ export function onGamepadConnected(event) {
         cell2.innerHTML = element.value;
         cell3.innerHTML = element.isAnalog;
     }
-
-    populateTable(gamepadIndex);
-    
 }
 
 // Event handler when a gamepad is disconnected
 export function onGamepadDisconnected(event) {
     const gamepad = event.gamepad;
+    gamepadRealIndex[gamepad.index] = null;
     console.log("Gamepad disconnected:" + gamepad.id + " : " + gamepad.index);
     gamepadSvgArr[gamepad.index].setAttribute('style', 'filter: contrast(30%);');
 }
 
 export function initGamepadInput() {
-    console.log("INIT GAMEPAD INPUT");
+    console.log("Init Gamepad inputs");
 
     // Set the bit at the specified index (buttonIndex)
     function setBit(buttonIndex) {
@@ -208,7 +216,7 @@ export function initGamepadInput() {
     function updateGamepadInput() {
         if (isPaused) {
             // Exit the function if it's paused
-            // console.log("Stop input recording")
+            console.log("Stop input recording")
             return;
         }
         // Get the list of connected gamepads
@@ -294,7 +302,7 @@ export function initGamepadInput() {
                             sThumbRX: stickValues[i][2] * 32767 | 0,
                             sThumbRY: stickValues[i][5] * -32767 | 0,
                         }),
-                        option: i,
+                        option: gamepadRealIndex[i],
                     });
 
                 }
@@ -352,16 +360,31 @@ function floorToNearest0_1(value) {
 }
 
 // Function to pause the gamepad input
-export function pauseGamepadInput() {
+function pauseGamepadInput() {
     isPaused = true;
+    const button = document.getElementById('inputrecord');
+    if (button) {
+        button.textContent = isPaused ? 'Resume' : 'Pause';
+    }
 }
 
 // Function to resume the gamepad input
-export function resumeGamepadInput() {
-    // isPaused = false;
+function resumeGamepadInput() {
     if (isPaused) {
         isPaused = false;
         initGamepadInput(); // Start/resume the loop
+        const button = document.getElementById('inputrecord');
+        if (button) {
+            button.textContent = isPaused ? 'Resume' : 'Pause';
+        }
+    }
+}
+
+export function toggleGamepadInput() {
+    if (isPaused) {
+        resumeGamepadInput();
+    } else {
+        pauseGamepadInput();
     }
 }
 
@@ -507,10 +530,39 @@ function populateTable(index) {
 
 }
 
-export function addGamepad() {
+export function addGamepad(index) {
     console.log("Adding gamepad on the server");
     send({
         type: "ADDGAMEPAD",
-        data: "",
+        option: index
     });
+}
+
+// Function to handle changes in input fields
+export function handleInputChange(event) {
+    const controllerId = event.target.id;
+    const value = parseInt(event.target.value, 10);
+    if (isNaN(value)) {
+        console.log('Invalid value');
+        return;
+    }
+    console.log(`Controller ${controllerId} changed to: ${value}`);
+    switch (controllerId) {
+        case 'controller0Index':
+            gamepadRealIndex[0] = value
+            break;
+        case 'controller1Index':
+            gamepadRealIndex[1] = value
+            break;
+        case 'controller2Index':
+            gamepadRealIndex[2] = value
+            break;
+        case 'controller3Index':
+            gamepadRealIndex[3] = value
+            break;
+        default:
+            console.log('Unknown controller');
+    }
+    // Ensure that the gamepad exists for the given index
+    addGamepad(value);
 }

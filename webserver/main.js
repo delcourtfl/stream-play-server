@@ -12,32 +12,32 @@ import {
     toggleVideo
 } from './js/webrtc.js';
 import {
-    setInputChannel,
+
     initGamepadInput,
-    pauseGamepadInput,
-    resumeGamepadInput,
-    addGamepad,
+    toggleGamepadInput,
+    handleInputChange,
     createGamepadMapping,
     onGamepadConnected,
+    showDefaultMapping,
     onGamepadDisconnected,
     loadSvgObjects
 } from './js/inputs.js'; // Adjust the path as needed
 
 await connectToSignServer();
 
-await loadSvgObjects().then(() => {    
-    // Check if the browser supports the Gamepad API
-    if ("getGamepads" in navigator) {
-        // Start listening for gamepad events
-        window.addEventListener("gamepadconnected", onGamepadConnected);
-        window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
-        console.log("Gamepad API is available");
-    } else {
-        console.log("Gamepad API is not supported");
-    }
+loadSvgObjects();
 
-    initGamepadInput();
-});
+if ("getGamepads" in navigator) {
+    // Start listening for gamepad events
+    window.addEventListener("gamepadconnected", onGamepadConnected);
+    window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
+    showDefaultMapping();
+    console.log("Gamepad API is available");
+} else {
+    console.log("Gamepad API is not supported");
+}
+
+initGamepadInput();
 
 // Get the button element
 const hostButton = document.getElementById('hostButton');
@@ -76,12 +76,12 @@ document.getElementById("recordAudio").addEventListener("click", () => {
 });
 
 document.getElementById("map").addEventListener("click", createGamepadMapping);
-document.getElementById("init").addEventListener("click", () => {
-    const channel = getDataChannel();
-    setInputChannel(channel);
-    resumeGamepadInput();
-});
-document.getElementById("pause").addEventListener("click", pauseGamepadInput);
-document.getElementById("addGamepad").addEventListener("click", addGamepad);
+document.getElementById("inputrecord").addEventListener("click", toggleGamepadInput);
+
+// Set up an event listener to call the function whenever the input value changes
+document.getElementById('controller0Index').addEventListener('input', handleInputChange);
+document.getElementById('controller1Index').addEventListener('input', handleInputChange);
+document.getElementById('controller2Index').addEventListener('input', handleInputChange);
+document.getElementById('controller3Index').addEventListener('input', handleInputChange);
 
 setInterval(checkVideoReceptionStatus, 10000);

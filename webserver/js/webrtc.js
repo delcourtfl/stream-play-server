@@ -1,5 +1,10 @@
 // Utils function to manage WebRTC connection
 
+import {
+    setInputChannel,
+    initGamepadInput
+} from './inputs.js'; // Adjust the path as needed
+
 let streamIn = null;
 let streamOut = null;
 
@@ -109,6 +114,7 @@ export async function connectToSignServer() {
 
         signalingSocket.onopen = () => console.log(WebSocket.OPEN);
         signalingSocket.onclose = () => console.log(WebSocket.CLOSED);
+        signalingSocket.onerror = () => console.log("Can't connect to signaling server");
 
         console.log("Server IP:", serverIP, "Server Port:", serverPort);
 
@@ -124,6 +130,9 @@ export async function connectToSignServer() {
             localSocket.onopen = () => {
                 console.log('Local WebSocket connection opened');
             };
+            localSocket.onmessage = (event) => {
+                console.log(event);
+            }
         }
 
     } catch (error) {
@@ -162,6 +171,8 @@ async function createPeerConnection(peerId, withDataChannel) {
         const dataChannel = peerConnection.createDataChannel("data");
         dataChannel.onopen = () => {
             console.log("Data channel initiated with", peerId);
+            const channel = getDataChannel();
+            setInputChannel(channel);
         };
         dataChannel.onmessage = (event) => {
             console.log("Received message from", peerId, ":", event.data);

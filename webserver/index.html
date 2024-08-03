@@ -40,15 +40,16 @@
         </div>
 
         <div id="Controllers" class="tabcontent">
-            <button id="map"> Map </button>
-            <button id="defaultmap"> DefaultMap </button>
-            <button id="init"> Init </button>
-            <button id="pause"> Pause </button>
-            <button id="addGamepad"> AddController </button>
+            <div class="input-controls">
+                <button id="map"> Map </button>
+                <button id="defaultmap"> DefaultMap </button>
+                <button id="inputrecord"> Pause </button>
+                <!-- <button id="addGamepad"> AddController </button> -->
+            </div>
             <table class="controllers">
                 <tr>
-                    <th>Controller 0</th>
-                    <th>Controller 1</th>
+                    <th>Controller <input type="number" id="controller0Index" value=0 min="0" max="3" required></th>
+                    <th>Controller <input type="number" id="controller1Index" value=1 min="0" max="3" required></th>
                 </tr>
                 <tr>
                     <td>
@@ -61,8 +62,8 @@
             </table>
             <table class="controllers">
                 <tr>
-                    <th>Controller 2</th>
-                    <th>Controller 3</th>
+                    <th>Controller <input type="number" id="controller2Index" value=2 min="0" max="3" required></th>
+                    <th>Controller <input type="number" id="controller3Index" value=3 min="0" max="3" required></th>
                 </tr>
                 <tr>
                     <td>

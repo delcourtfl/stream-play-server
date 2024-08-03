@@ -66,7 +66,7 @@ func main() {
 
 }
 
-func processMessage(msg []byte, x360Array *[]*Xbox360Controller, emulatorArray *[]*Emulator, title string) {
+func processMessage(msg []byte, x360Array *[4]*Xbox360Controller, emulatorArray *[4]*Emulator, title string) {
 
 	var event KeyEvent
 	err := json.Unmarshal(msg, &event)
@@ -121,11 +121,19 @@ func processMessage(msg []byte, x360Array *[]*Xbox360Controller, emulatorArray *
 		}
 
 	case "ADDGAMEPAD":
-		fmt.Println("Adding a new gamepad")
-		if len(*x360Array) >= 4 {
-			fmt.Println("Already 4 gamepads")
+		index := event.Option
+		fmt.Println("Adding a new gamepad: ", index)
+
+		if index >= 4 {
+			fmt.Println("Can't have more than 4 gamepads")
 			return
 		}
+
+		if x360Array[index] != nil {
+			fmt.Println("A gamepad is already set at index", index)
+			return
+		}
+
 		emulator, err := NewEmulator(nil)
 		if err != nil {
 			fmt.Printf("unable to start ViGEm client: %v\n", err)
@@ -140,8 +148,8 @@ func processMessage(msg []byte, x360Array *[]*Xbox360Controller, emulatorArray *
 			fmt.Printf("unable to connect to emulated Xbox 360 controller: %v\n", err)
 		}
 
-		*emulatorArray = append(*emulatorArray, emulator)
-		*x360Array = append(*x360Array, x360)
+		x360Array[index] = x360
+		emulatorArray[index] = emulator
 
 		time.Sleep(5 * time.Second)
 		fmt.Printf("Gamepad OK \n")
@@ -158,15 +166,19 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error while upgrading connection:", err)
 		return
 	}
-	var x360Array []*Xbox360Controller
-	var emulatorArray []*Emulator
+	var x360Array [4]*Xbox360Controller
+	var emulatorArray [4]*Emulator
 	defer func() {
 		// Cleanup resources when the connection is closed
 		for _, emulator := range emulatorArray {
-			emulator.Close()
+			if emulator != nil {
+				emulator.Close()
+			}
 		}
 		for _, x360 := range x360Array {
-			x360.Close()
+			if x360 != nil {
+				x360.Close()
+			}
 		}
 		conn.Close()
 		log.Println("Connection closed and resources cleaned up")
