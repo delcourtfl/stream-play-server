@@ -248,10 +248,14 @@ export async function checkVideoReceptionStatus() {
         const peerConnection = connection.peerConnection;
         if (peerConnection) {
             peerConnection.getStats().then((stats) => {
-                printRTCStatsReport(stats);
+                // printRTCStatsReport(stats);
                 stats.forEach((report) => {
-                    if (report.type === 'inbound-rtp' && report.kind === 'video') {
-                        console.log('Video data received: ' + report.framesReceived + ' frames');
+                    if (report.type === 'inbound-rtp') {
+                        if (report.kind === 'video') {
+                            console.log('Video data received: ' + report.framesReceived + ' frames');
+                        } else if (report.kind === 'audio') {
+                            console.log('Audio data received: ' + report.packetsReceived + ' packets');
+                        }
                     }
                 });
             });

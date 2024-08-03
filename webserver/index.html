@@ -6,15 +6,15 @@
     <body>
 
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Selection')" id="default">Selection</button>
-            <button class="tablinks" onclick="openTab(event, 'Game')">Game</button>
-            <button class="tablinks" onclick="openTab(event, 'Controllers')">Controllers</button>
+            <button class="tabbutton" onclick="openTab(event, 'Selection')" id="default">Selection</button>
+            <button class="tabbutton" onclick="openTab(event, 'Game')">Game</button>
+            <button class="tabbutton" onclick="openTab(event, 'Controllers')">Controllers</button>
         </div>
 
-        <div class="menu hidden">
+        <!-- <div class="menu hidden">
             <button id="hangupButton"> Stop Call </button>
-            <button class="tablinks" onclick="openTab(event, 'Controllers')"> Controllers </button>
-        </div>
+            <button class="tabbutton" onclick="openTab(event, 'Controllers')"> Controllers </button>
+        </div> -->
         
         <div id="Selection" class="tabcontent">
             <div class="banner">
@@ -28,11 +28,14 @@
             <div class="big-buttons">
                 <button id="hostButton" class="big-button"> Host </button>
                 <button id="joinButton" class="big-button"> Join </button>
+            </div class="small-buttons">
+            <div class="small-buttons">
+                <button id="hangupButton" class="small-button"> Stop Call </button>
             </div>
         </div>
 
         <div id="Game" class="tabcontent">
-            <video id="streamVideo" controls autoplay muted playsinline></video>
+            <video id="streamVideo" controls autoplay playsinline></video>
         </div>
 
         <div id="Controllers" class="tabcontent">
@@ -41,7 +44,7 @@
             <button id="init"> Init </button>
             <button id="pause"> Pause </button>
             <button id="addGamepad"> AddController </button>
-            <table>
+            <table class="controllers">
                 <tr>
                     <th>Controller 0</th>
                     <th>Controller 1</th>
@@ -55,7 +58,7 @@
                     </td>
                 </tr>
             </table>
-            <table>
+            <table class="controllers">
                 <tr>
                     <th>Controller 2</th>
                     <th>Controller 3</th>
@@ -112,14 +115,14 @@
         <script>
 
         function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
+            var i, tabcontent, tabbuttons;
             tabcontent = document.getElementsByClassName("tabcontent");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            tabbuttons = document.getElementsByClassName("tabbutton");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
             }
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";

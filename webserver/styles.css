@@ -16,18 +16,37 @@ video {
     width: 100%;
 }
 
+.tabcontent {
+    width: 100%;
+}
+
 .tab button {
     flex-grow: 1;
+    /* width: 20%; */
+    /* padding: 10px; */
+    cursor: pointer;
+    background-color: #6c757d;
+    font-size: 18px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    color: #ffffff;
+    border: none;
+    /* border-radius: 30px; */
+    transition: background-color 0.3s ease;
 }
 
 .table-container {
     display: flex;
     border: 1px solid #ccc;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 table {
     border: 1px solid #ccc;
+}
+
+.controllers {
+    width: 100%;
 }
 
 .selected-button {
@@ -48,17 +67,16 @@ table {
     color: #ffffff;
     width: 100%;
     height: 10%;
-    padding: 10px 0px 10px 0px;
+    padding: 5px 0px 5px 0px;
     margin-bottom: 20px;
 }
 
 .banner img {
     width: 15%; /* Set fixed width */
     height: 100%; /* Set fixed height */
-    margin-right: 10px; /* Space between the image and text */
+    margin-right: 5lpx; /* Space between the image and text */
     transition: transform 0.3s ease-in-out; /* Animation for hover effect */
 }
-
 
 .big-buttons {
     margin-bottom: 20px;
@@ -118,3 +136,27 @@ table {
     cursor: not-allowed; /* Not-allowed cursor */
     opacity: 0.65; /* Slightly transparent */
 }
+
+.tabbutton {
+    /* width: 20%; */
+    /* padding: 10px; */
+    cursor: pointer;
+    background-color: #6c757d;
+    font-size: 14px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    color: #ffffff;
+    /* border: none; */
+    /* border-radius: 30px; */
+    transition: background-color 0.3s ease;
+}
+
+/* .tabbutton:active {
+    background-color: #228deb;
+    transition: background-color 0.3s ease;
+} */
+
+.tabbutton.active {
+    background-color: #228deb;
+    transition: background-color 0.3s ease;
+}
+
