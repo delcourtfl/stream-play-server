@@ -165,6 +165,8 @@ async function createPeerConnection(peerId, withDataChannel) {
         const videoElement = document.getElementById('streamVideo');
         videoElement.srcObject = event.streams[0];
         streamIn = event.streams[0];
+
+        document.getElementById('gameReady').click();
     };
 
     if (withDataChannel) {
@@ -366,6 +368,8 @@ export async function startCall() {
         const videoElement = document.getElementById('streamVideo');
         videoElement.srcObject = stream;
         streamOut = stream;
+
+        document.getElementById('gameReady').click();
 
         signalingSocket.send(JSON.stringify({
             type: 'ready',
