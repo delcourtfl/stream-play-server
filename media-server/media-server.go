@@ -187,7 +187,11 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 	log.Println("Client connected")
 
 	for {
-		_, msg, _ := conn.ReadMessage()
+		_, msg, errMsg := conn.ReadMessage()
+		if errMsg != nil {
+			log.Println("Failed to read message:", errMsg)
+			break
+		}
 
 		var event KeyEvent
 		err = json.Unmarshal(msg, &event)
