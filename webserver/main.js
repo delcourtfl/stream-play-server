@@ -1,10 +1,6 @@
 import { 
     connectToSignServer,
     checkVideoReceptionStatus,
-    localPeerId,
-    hangup,
-    makeCall,
-    getDataChannel,
     hangupCall,
     startCall,
     joinCall,
@@ -12,7 +8,6 @@ import {
     toggleVideo
 } from './js/webrtc.js';
 import {
-
     initGamepadInput,
     toggleGamepadInput,
     handleInputChange,

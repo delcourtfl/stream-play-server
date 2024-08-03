@@ -144,6 +144,7 @@ async function createPeerConnection(peerId, withDataChannel) {
     if (peerConnections[peerId]) {
         return;
     }
+
     const peerConnection = new RTCPeerConnection();
 
     peerConnection.onicecandidate = (e) => {
@@ -259,7 +260,7 @@ export async function checkVideoReceptionStatus() {
         const peerConnection = connection.peerConnection;
         if (peerConnection) {
             peerConnection.getStats().then((stats) => {
-                // printRTCStatsReport(stats);
+                printRTCStatsReport(stats);
                 stats.forEach((report) => {
                     if (report.type === 'inbound-rtp') {
                         if (report.kind === 'video') {
@@ -343,7 +344,21 @@ export async function makeCall(peerId) {
 };
 
 export async function startCall() {
-    const displayMediaOptions = { video: getVideo, audio: getAudio };
+    const displayMediaOptions = { 
+        video: getVideo ? {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { max: 30 },
+            latency: 0
+        } : false,
+        audio: getAudio ? {
+            noiseSuppression: false,
+            autoGainControl: false,
+            echoCancellation: false,
+            sampleRate: 48000,
+            latency: 0
+        } : false
+    };
 
     const stream = await startCapture(displayMediaOptions);
     if (stream) {
