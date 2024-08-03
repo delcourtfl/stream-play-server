@@ -6,7 +6,7 @@ body {
 
 video {
     width: 100%;
-    height: calc(100% - 24px);
+    height: calc(100% - 28px);
     object-fit: 'contain';
 }
 
@@ -14,6 +14,7 @@ video {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    height: 28px;
 }
 
 .tabcontent {
@@ -87,7 +88,10 @@ table {
 }
 
 .big-button {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     width: 40%;
     height: 100%;
     padding: 15px;
@@ -100,6 +104,12 @@ table {
     border: none;
     border-radius: 30px;
     transition: background-color 0.3s ease;
+}
+
+.big-button img {
+    width: 60px; /* Adjust size of the SVG icon */
+    height: 60px;
+    margin-bottom: 8px; /* Space between icon and text */
 }
 
 .small-buttons {

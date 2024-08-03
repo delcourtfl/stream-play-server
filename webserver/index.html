@@ -6,17 +6,12 @@
     <body>
 
         <div class="tab">
-            <button class="tabbutton" onclick="openTab(event, 'Selection')" id="default">Selection</button>
+            <button class="tabbutton" onclick="openTab(event, 'Connection')" id="default">Connection</button>
             <button class="tabbutton" onclick="openTab(event, 'Game')">Game</button>
             <button class="tabbutton" onclick="openTab(event, 'Controllers')">Controllers</button>
         </div>
-
-        <!-- <div class="menu hidden">
-            <button id="hangupButton"> Stop Call </button>
-            <button class="tabbutton" onclick="openTab(event, 'Controllers')"> Controllers </button>
-        </div> -->
         
-        <div id="Selection" class="tabcontent">
+        <div id="Connection" class="tabcontent">
             <div class="banner">
                 <img src="logoSPS.svg" alt="Logo">
                 <span> Stream Play Server </span>
@@ -26,8 +21,14 @@
                 <button id="recordAudio" class="small-button"> Audio : On </button>
             </div>
             <div class="big-buttons">
-                <button id="hostButton" class="big-button"> Host </button>
-                <button id="joinButton" class="big-button"> Join </button>
+                <button id="hostButton" class="big-button">
+                    <img src="cast.svg" alt="Host Icon">
+                     Host 
+                </button>
+                <button id="joinButton" class="big-button">
+                    <img src="play.svg" alt="Join Icon"> 
+                     Join 
+                </button>
             </div class="small-buttons">
             <div class="small-buttons">
                 <button id="hangupButton" class="small-button"> Stop Call </button>

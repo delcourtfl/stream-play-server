@@ -46,7 +46,7 @@ const processMsg = (msg) => {
             console.log("Received answer");
             if (peerId === localPeerId || !peerConnections[peerId]) {
                 console.log('Wrong anwser, ignoring : ', peerId);
-            } else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.currentRemoteDescriptiob) {
+            } else if (peerConnections[peerId].peerConnection && peerConnections[peerId].peerConnection.currentRemoteDescription) {
                 console.log('No need for answer, ignoring : ', peerId);
             } else {
                 handleAnswer(peerId, msg);
