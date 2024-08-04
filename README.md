@@ -1,4 +1,5 @@
 # Stream Play Server (SPS)
+# Version 0.0.2
 
 ![SPS Logo](res/SPSLogo.png)
 

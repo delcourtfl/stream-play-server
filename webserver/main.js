@@ -48,6 +48,9 @@ if (currentHostname !== 'localhost') {
 } else {
     // Enable the button if the hostname is 'localhost'
     hostButton.disabled = false;
+    const videoElement = document.getElementById('streamVideo');
+    // Mute by default to prevent any unintended audio playback
+    videoElement.muted = true;
 }
 
 document.getElementById("hostButton").addEventListener("click", () => {

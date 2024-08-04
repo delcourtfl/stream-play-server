@@ -145,7 +145,14 @@ async function createPeerConnection(peerId, withDataChannel) {
         return;
     }
 
-    const peerConnection = new RTCPeerConnection();
+    const configuration = {
+        iceServers: [
+            {
+                urls: 'stun:stun.l.google.com:19302' // Google's public STUN server
+            }
+        ]
+    };
+    const peerConnection = new RTCPeerConnection(configuration);
 
     peerConnection.onicecandidate = (e) => {
         const message = {
