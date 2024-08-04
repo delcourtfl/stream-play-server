@@ -18,18 +18,19 @@ Small video showing the usage of SPS using a phone with one controller connected
 
 ## Description
 
-# Version 0.0.2
-# Modifications :
+# Release 0.0.2
+# Release notes :
 
 - Upgraded the client UI (simplified overall process)
 - Removed pion WebRTC and FFMPEG dependencies by using the getDisplayMedia() method of the MediaDevices interface implemented in (most) browsers.
-    This was done to improve the performance of the video/audio transmission as I was not able to make it work properly for my use-case using the previous implementation. I would like to avoid depending on the browser methods to focus on a Golang media-server for recording and transmission.And, as such, I will try to follow the development of the Pion MediaDevice implementation.
-- For now, hosting is only available on localhost:web\_port due to the required secure contexts for getDisplayMedia().
+    This was done to improve the performance of the video/audio transmission as I was not able to make it work properly for my use-case using the previous implementation. I would like to avoid depending on the browser methods to focus on a Golang media-server for recording and transmission, and, as such, I will try to follow the development of the Pion MediaDevice implementation.
+- getDisplayMedia() is browser dependent (https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) and it was mainly tested on Google Chrome (which enable recording for browser tab video+audio, application video or system video+audio)
+- For now, hosting is only available on localhost:web\_port due to the required secure contexts of getDisplayMedia().
 - Added Gamepad index modification to be able to separate the multiple clients.
 
 ![SPS Diagram 0.0.2](res/NewStructureSPS.png)
 
-# Version 0.0.1
+# Release 0.0.1
 ![SPS Diagram 0.0.1](res/OldStructureSPS.png)
 
 - **Media-Server**
