@@ -1,5 +1,4 @@
 # Stream Play Server (SPS)
-### Version 0.0.2
 
 ![SPS Logo](res/logoSPS.png)
 
@@ -111,7 +110,7 @@ Once the application is running some commands are available :
 - *client* : restart client webserver
 - *server* : restart media server
 
-When the signaling server is up, you can open the user interface as host (on a local instance only, http://localhost:web_port) or as client (on the ip address you provided in the config.json file, http://ip_address:web_port).
+When the signaling server is up, you can open the user interface as host (on a local instance only, `http://localhost:web_port`) or as client (on the ip address you provided in the config.json file, `http://ip_address:web_port`).
 
 There you can find 3 tabs for managing the game sharing process:
 - *Connection Tab*
