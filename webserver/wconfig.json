@@ -1,0 +1,6 @@
+{
+    "ip_address": "192.168.68.101",
+    "web_port": "3000",
+    "sign_port": "3001",
+    "input_port": "3002"
+}

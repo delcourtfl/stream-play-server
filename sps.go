@@ -1,37 +1,28 @@
 package main // Stream Play Server
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
-	"syscall"
-	"unsafe"
-	"time"
 	"path/filepath"
 	"strconv"
-	"bufio"
-	"unicode/utf16"
+	"strings"
+	"syscall"
+	"time"
+	"unsafe"
 )
 
 var (
-	kernel32                    = syscall.NewLazyDLL("kernel32.dll")
-	procGetStdHandle            = kernel32.NewProc("GetStdHandle")
-	procGetConsoleMode          = kernel32.NewProc("GetConsoleMode")
-	procSetConsoleMode          = kernel32.NewProc("SetConsoleMode")
-)
-
-var (
-	moduser32        			= syscall.NewLazyDLL("user32.dll")
-	enumWindowsProc  			= moduser32.NewProc("EnumWindows")
-	getWindowTextW   			= moduser32.NewProc("GetWindowTextW")
-	isWindowVisible  			= moduser32.NewProc("IsWindowVisible")
+	kernel32           = syscall.NewLazyDLL("kernel32.dll")
+	procGetStdHandle   = kernel32.NewProc("GetStdHandle")
+	procGetConsoleMode = kernel32.NewProc("GetConsoleMode")
+	procSetConsoleMode = kernel32.NewProc("SetConsoleMode")
 )
 
 const (
-	stdInputHandle  = uint32(-10 & 0xFFFFFFFF)
+	stdInputHandle = uint32(-10 & 0xFFFFFFFF)
 )
 
 var signCmd *exec.Cmd
@@ -39,9 +30,10 @@ var serverCmd *exec.Cmd
 var clientCmd *exec.Cmd
 
 var (
-	ipAddress    string
-	port  string
-	title string
+	ipAddress  string
+	web_port   string
+	sign_port  string
+	input_port string
 )
 
 /**
@@ -49,12 +41,12 @@ var (
  * It reads configuration from a JSON file, launches various processes, and handles user input.
  */
 func main() {
-	args := os.Args[1:] // Exclude the first argument, which is the program name
-	
+	// args := os.Args[1:] // Exclude the first argument, which is the program name
+
 	jsonFile := "config.json"
 
 	// Read the JSON file
-	jsonBytes, err := ioutil.ReadFile(jsonFile)
+	jsonBytes, err := os.ReadFile(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,23 +55,13 @@ func main() {
 	jsonStr := string(jsonBytes)
 
 	ipAddress = extractFieldValue(jsonStr, `"ip_address"`)
-	port = extractFieldValue(jsonStr, `"port"`)
-	if len(args) > 0 && args[0] == "-ui" {
-		title = ""
-	} else {
-		title = extractFieldValue(jsonStr, `"window_name"`)
-	}
+	web_port = extractFieldValue(jsonStr, `"web_port"`)
+	sign_port = extractFieldValue(jsonStr, `"sign_port"`)
+	input_port = extractFieldValue(jsonStr, `"input_port"`)
 
-	if title == "" {
-		title = setTitleManually()
-		if title == "" {
-			panic(0)
-		}
-	}
-
-	fmt.Println(ipAddress)
-	fmt.Println(port)
-	fmt.Println(title)
+	fmt.Println(ipAddress + ":" + web_port)
+	fmt.Println(ipAddress + ":" + sign_port)
+	fmt.Println("localhost:" + input_port)
 
 	// Get the current working directory
 	workingDir, err := os.Getwd()
@@ -88,7 +70,7 @@ func main() {
 	}
 
 	// Add Config json file to the webserver
-	configWebserverPath := filepath.Join(workingDir, "webserver/client/wconfig.json")
+	configWebserverPath := filepath.Join(workingDir, "webserver/wconfig.json")
 
 	// Create the destination file
 	configWebserverFile, err := os.Create(configWebserverPath)
@@ -105,12 +87,10 @@ func main() {
 
 	log.Println("Config File copied successfully!")
 
-
 	// Set the folder to be appended to the working directory
 	folderSign := "signaling"
 	folderServer := "media-server"
 	folderWeb := "webserver"
-
 
 	////////////////////////////
 	// Start signaling server //
@@ -124,7 +104,7 @@ func main() {
 		"go",
 		[]string{
 			"run", ".",
-			ipAddress, port,
+			ipAddress, sign_port,
 		},
 		"logs/sign.log",
 		folderSignPath,
@@ -150,7 +130,7 @@ func main() {
 		"go",
 		[]string{
 			"run", ".",
-			ipAddress, port, title,
+			input_port,
 		},
 		"logs/server.log",
 		folderServerPath,
@@ -176,7 +156,7 @@ func main() {
 		"go",
 		[]string{
 			"run", ".",
-			ipAddress, port,
+			ipAddress, web_port,
 		},
 		"logs/client.log",
 		folderWebPath,
@@ -225,7 +205,7 @@ func main() {
 
 			fmt.Println(status)
 		}
-	}();
+	}()
 
 	// Set the terminal to raw mode to capture keypresses immediately
 	setRawMode()
@@ -260,7 +240,7 @@ func main() {
 				"go",
 				[]string{
 					"run", ".",
-					ipAddress, port,
+					ipAddress, sign_port,
 				},
 				"logs/sign.log",
 				folderSignPath,
@@ -277,7 +257,7 @@ func main() {
 				"go",
 				[]string{
 					"run", ".",
-					ipAddress, port,
+					ipAddress, web_port,
 				},
 				"logs/client.log",
 				folderWebPath,
@@ -294,29 +274,7 @@ func main() {
 				"go",
 				[]string{
 					"run", ".",
-					ipAddress, port, title,
-				},
-				"logs/server.log",
-				folderServerPath,
-			)
-			if err != nil {
-				panic(err)
-			}
-
-		case "change":
-			title = setTitleManually()
-			if title == "" {
-				continue
-			}
-
-			fmt.Println("Restart server")
-			stopProcess(serverCmd)
-
-			serverCmd, err = launchCommand(
-				"go",
-				[]string{
-					"run", ".",
-					ipAddress, port, title,
+					input_port,
 				},
 				"logs/server.log",
 				folderServerPath,
@@ -369,19 +327,6 @@ func setRawMode() {
 }
 
 /**
- * getCurrentDirectory returns the current directory.
- *
- * @return The current directory as a string.
- */
-func getCurrentDirectory() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return dir
-}
-
-/**
  * launchCommand launches a command as a subprocess in a new process group.
  *
  * @param command The name or path of the executable command to run.
@@ -391,7 +336,7 @@ func getCurrentDirectory() string {
  * @return A pointer to the Cmd struct representing the running command and an error (if any).
  *         If there is an error while starting the command, the returned pointer will be nil, and the error will be non-nil.
  */
- func launchCommand(command string, args []string, filePath string, workingDir string) (*exec.Cmd, error) {
+func launchCommand(command string, args []string, filePath string, workingDir string) (*exec.Cmd, error) {
 	cmd := exec.Command(command, args...)
 	fmt.Println(cmd)
 
@@ -458,86 +403,4 @@ func stopProcess(cmd *exec.Cmd) {
 		}
 	}
 	fmt.Println("Should not happen...")
-}
-
-/**
- * findWindowTitle retrieves the window title of a given executable string.
- *
- * @param execString The executable string used to identify the window.
- * @return The window title as a string if found, or an error if the title is not found.
- */
- func findWindowTitle(execString string) (string, error) {
-	// Run the tasklist command to get the window titles
-	tasklistCmd := exec.Command("cmd.exe", "/C", "tasklist", "/v", "/fi", "imagename eq " + execString, "/fo", "list", "|", "findstr", "Titre")
-	output, err := tasklistCmd.Output()
-	if err != nil {
-		return "", err
-	}
-	// Convert bytes to string
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		// Split the windowString using ":" as the delimiter
-		parts := strings.Split(line, ": ")
-		if len(parts) > 1 && len(parts[1]) > 0 {
-			//  Need to remove useless byte at the end : [13] => (carriage return)
-			return parts[1][:len(parts[1])-1], nil
-		}
-	}
-
-	return "", fmt.Errorf("window title not found")
-}
-
-/**
- * getWindowTitles retrieves a list of visible window titles.
- *
- * @return A slice of strings representing the visible window titles.
- */
-func getWindowTitles() []string {
-	var titles []string
-
-	enumWindowsProc.Call(syscall.NewCallback(func(hwnd syscall.Handle, lParam uintptr) uintptr {
-		var buf [256]uint16
-		if _, _, err := getWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf))); err.(syscall.Errno) == 0 {
-			length := 0
-			for buf[length] != 0 {
-				length++
-			}
-			title := string(utf16.Decode(buf[:length]))
-			visible, _, _ := isWindowVisible.Call(uintptr(hwnd))
-			if visible != 0 && len(title) > 0 {
-				titles = append(titles, title)
-			}
-		}
-		return 1 // Continue enumeration
-	}), 0)
-
-	return titles
-}
-
-/**
- * setTitleManually interactively prompts the user to manually select a window title.
- *
- * @return The selected window title as a string. If the index is invalid, it returns an empty string.
- */
-func setTitleManually() string { 
-	titles := getWindowTitles()
-	fmt.Println("[Window Titles (visible)]")
-	for i, t := range titles {
-		fmt.Printf("%d: %s\n", i, t)
-	}
-
-	// Wait for index input after the loop
-	var index int
-	index = -1
-	fmt.Print("Enter the index of the window you want to select: ")
-	fmt.Scanln(&index)
-
-	// Perform further operations based on the selected index
-	if index >= 0 && index < len(titles) {
-		fmt.Println("You selected window title:", titles[index])
-		return titles[index]
-	} else {
-		fmt.Println("Invalid index. Please enter a valid index.")
-		return ""
-	}
 }

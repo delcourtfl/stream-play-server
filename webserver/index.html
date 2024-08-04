@@ -1,0 +1,136 @@
+<html>
+    <head>
+        <title>SPS : Gaming Page</title>
+        <link rel="stylesheet" type="text/css" href="styles.css">
+    </head>
+    <body>
+
+        <div class="tab">
+            <button class="tabbutton" id="default" onclick="openTab(event, 'Connection')">Connection</button>
+            <button class="tabbutton" id="gameReady" onclick="openTab(event, 'Game')">Game</button>
+            <button class="tabbutton" onclick="openTab(event, 'Controllers')">Controllers</button>
+        </div>
+        
+        <div id="Connection" class="tabcontent">
+            <div class="banner">
+                <img src="logoSPS.svg" alt="Logo">
+                <span> Stream Play Server </span>
+            </div>
+            <div class="small-buttons">
+                <button id="recordVideo" class="small-button"> Video : On </button>
+                <button id="recordAudio" class="small-button"> Audio : On </button>
+            </div>
+            <div class="big-buttons">
+                <button id="hostButton" class="big-button">
+                    <img src="cast.svg" alt="Host Icon">
+                     Host 
+                </button>
+                <button id="joinButton" class="big-button">
+                    <img src="play.svg" alt="Join Icon"> 
+                     Join 
+                </button>
+            </div class="small-buttons">
+            <div class="small-buttons">
+                <button id="hangupButton" class="small-button"> Stop Call </button>
+            </div>
+        </div>
+
+        <div id="Game" class="tabcontent">
+            <video id="streamVideo" controls autoplay playsinline></video>
+        </div>
+
+        <div id="Controllers" class="tabcontent">
+            <div class="input-controls">
+                <button id="map"> Map </button>
+                <button id="defaultmap"> DefaultMap </button>
+                <button id="inputrecord"> Pause </button>
+            </div>
+            <table class="controllers">
+                <tr>
+                    <th>Controller <input type="number" id="controller0Index" value=0 min="0" max="3" required></th>
+                    <th>Controller <input type="number" id="controller1Index" value=1 min="0" max="3" required></th>
+                </tr>
+                <tr>
+                    <td>
+                        <object id="svg-object0" type="image/svg+xml"></object>
+                    </td>
+                    <td>
+                        <object id="svg-object1" type="image/svg+xml"></object>
+                    </td>
+                </tr>
+            </table>
+            <table class="controllers">
+                <tr>
+                    <th>Controller <input type="number" id="controller2Index" value=2 min="0" max="3" required></th>
+                    <th>Controller <input type="number" id="controller3Index" value=3 min="0" max="3" required></th>
+                </tr>
+                <tr>
+                    <td>
+                        <object id="svg-object2" type="image/svg+xml"></object>
+                    </td>
+                    <td>
+                        <object id="svg-object3" type="image/svg+xml"></object>
+                    </td>
+                </tr>
+            </table>
+            <div class="table-container">
+                <table id="defaultcontroller">
+                    <caption>default</caption>
+                    <tr>
+                        <th>Button</th>
+                        <th>Value</th>
+                    </tr>
+                </table>
+                <table id="controller0">
+                    <caption>controller1</caption>
+                    <tr>
+                        <th>Button</th>
+                        <th>Value</th>
+                    </tr>
+
+                </table>
+                <table id="controller1">
+                    <caption>controller2</caption>
+                    <tr>
+                        <th>Button</th>
+                        <th>Value</th>
+                    </tr>
+                </table>
+                <table id="controller2">
+                    <caption>controller3</caption>
+                    <tr>
+                        <th>Button</th>
+                        <th>Value</th>
+                    </tr>
+                </table>
+                <table id="controller3">
+                    <caption>controller4</caption>
+                    <tr>
+                        <th>Button</th>
+                        <th>Value</th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    
+        <script>
+
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tabbuttons = document.getElementsByClassName("tabbutton");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementById("default").click();
+
+        </script>
+        <script type="module" src="main.js"></script>
+    </body>
+</html>
