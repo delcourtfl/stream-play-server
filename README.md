@@ -1,5 +1,5 @@
 # Stream Play Server (SPS)
-# Version 0.0.2
+## Version 0.0.2
 
 ![SPS Logo](res/logoSPS.png)
 
@@ -23,7 +23,7 @@ Small video showing the usage of SPS using a phone with one controller connected
 
 - Upgraded the client UI (simplified overall process)
 - Removed pion WebRTC and FFMPEG dependencies by using the getDisplayMedia() method of the MediaDevices interface implemented in (most) browsers.
-    This was done to improve the performance of the video/audio transmission as I was not able to make it work properly for my use-case using the previous implementation. I would like to avoid depending on the browser methods to focus on a Golang media-server for recording and transmission, and, as such, I will try to follow the development of the Pion MediaDevice implementation.
+    This was done to improve the performance of the video/audio transmission as I was not able to make it work properly for my use-case using the previous implementation. I would like to avoid depending on the browser methods to focus on a Golang media-server for recording and transmission. I will try to follow the development of the Pion MediaDevice implementation for a future release.
 - getDisplayMedia() is browser dependent (https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) and it was mainly tested on Google Chrome (which enable recording for browser tab video+audio, application video or system video+audio)
 - For now, hosting is only available on localhost:web\_port due to the required secure contexts of getDisplayMedia().
 - Added Gamepad index modification to be able to separate the multiple clients.
@@ -43,13 +43,11 @@ Intermediary for WebRTC clients to exchange session information and coordinate t
 
 - **Client (Webserver)**
 
-User-facing part of the WebRTC application that runs in the web browser (User Interface)
+User-facing part of the WebRTC application that runs in the web browser (User Interface), 3 tabs available for the connection setup, media stream and controllers setup.
 
-| Main         |
-| --------------- |
-| ![Main](res/ClientSPSmain.PNG) |
-| http://ip\_address:web\_port |
-| There are 3 tabs available for the media stream, controller setup and connection setup |
+| Connection         | Game         | Controllers         |
+| --------------- | --------------- | --------------- |
+| ![Main](res/connection-tab.PNG) | ![Main](res/game-tab.PNG) | ![Main](res/controllers-tab.PNG) |
 
 ## Custom Installation
 
@@ -110,33 +108,30 @@ Once the application is running some commands are available :
 - *sign* : restart signaling server
 - *client* : restart client webserver
 - *server* : restart media server
-- *change* : change the window to stream and restart media server
 
 ![1](res/ServerSPS.PNG)
 
-For the user interface multiple steps are also needed :
-- Load the website on http://{your-SPS-instance-ip}
-- Go to the *Connection Tab*
-    - Video without audio is enabled by default but can be changed
-    - Establish the WebRTC connection using the connect button
-- Go to the *Controllers Tab*
-    - Add as many controllers as you need with the AddController button
-    - Configure the mapping manually if it is not a Xbox or PS3 controller
-    - Press the init button to start sending inputs to the server
-- Go back to the *Game Tab*
-    - Game should be playing in the video player after a few seconds
-    - Gamepad inputs should be reflected in (almost) realtime on the display
-    - Enjoy
+When the signaling server is up, you can open the user interface as host (on a local instance only, http://localhost:web_port) or as client (on the ip address you provided in the config.json file, http://ip_address:web_port).
 
+There you can find 3 tabs for managing the game sharing process:
+    - *Connection Tab*
+        - Host button to capture the media and share it using WebRTC
+        - Join button to create a P2P connection and read the recorded media
+    - *Game Tab*
+        - Game streamed by the WebRTC connection
+    - *Controllers Tab*
+        - Settings of the controllers which will send inputs back to the host
 
+Enjoy
 
 ## Technologies Used
 
 - HTML, CSS, and JavaScript (for the browser client/host instance).
-- Golang for the input management, the webserver and signaling server.
+- Golang for the input management, webserver and signaling server.
 - [WebRTC](https://webrtc.org/) for low latency media transmission.
 - [ViGEm](https://github.com/ViGEm/ViGEmBus) for game controller emulation.
 - [GamepadAPI](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API) for input reading.
+- [getDisplayMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) for game recording.
 
 ## Areas of Improvement
 
@@ -147,6 +142,8 @@ Current issues :
 - Audio recording for specific application is not supported in getDisplayMedia() (or not at all for some browsers)
 - Controllers are hard to map manually in the client browser
 - Gamepad API will need secure context in the future
+- Issue where a process won't stop after closing the main golang script
+- Automated benchmarking and realtime evaluation could be great
 
 ## License
 
